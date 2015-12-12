@@ -16,8 +16,16 @@ function Camera:move(dx, dy)
 	self.y = self.y + dy
 end
 
+function Camera:setX(x)
+	self.x = x
+end
+
 function Camera:getX()
 	return self.x
+end
+
+function Camera:setY(y)
+	self.y = y
 end
 
 function Camera:getY()

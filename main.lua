@@ -5,11 +5,14 @@ gamestate = require("hump.gamestate")
 timer = require("hump.timer")
 tween = require("tween.tween")
 
+Animation = require("animation.Animation")
+Animator = require("animation.Animator")
 Screen = require("Screen")
 Keyboard = require("input.Keyboard")
 Scene = require("Scene")
 Entity = require("Entity")
 Resources = require("Resources")
+BoxCollider = require("BoxCollider")
 
 function love.load()
 	love.graphics.setDefaultFilter("nearest","nearest")
@@ -43,9 +46,7 @@ function love.run()
 
 	love.load(arg)
 
-	-- We don't want the first frame's dt to include time taken by love.load.
 	love.timer.step()
-
 	local dt = 0
 
 	-- Create root canvas
@@ -80,7 +81,7 @@ function love.run()
 			love.graphics.clear()
 			love.graphics.origin()
 
-			canvas:clear(0, 0, 0, 255)
+			canvas:clear(gamestate.current():getBackgroundColor())
 			love.graphics.setCanvas(canvas)
 
 			love.draw()

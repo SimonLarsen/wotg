@@ -1,9 +1,8 @@
 local Terrain = class("Terrain", Entity)
 local CollisionHandler = require("CollisionHandler")
-local BoxCollider = require("BoxCollider")
 
 function Terrain:initialize()
-	Entity.initialize(self, 0, 0, 1, "terrain")
+	Entity.initialize(self, 0, 0, 10, "terrain")
 
 	self.colliders = {}
 	self.bg = Resources.getImage("bg.png")

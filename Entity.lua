@@ -1,9 +1,9 @@
 local Entity = class("Entity")
 
 function Entity:initialize(x, y, z, name)
-	self.x = x
-	self.y = y
-	self.z = z
+	self.x = x or 0
+	self.y = y or 0
+	self.z = z or 0
 	self.name = name
 	self.alive = true
 end

@@ -8,6 +8,9 @@ function Scene:initialize()
 	self.camera = Camera(Screen.WIDTH/2, Screen.HEIGHT/2)
 	self.collisionHandler = CollisionHandler(self)
 	self.hasEntered = false
+	self.checkCollisions = true
+
+	self.backgroundColor = {0, 0, 0, 255}
 
 	timer.clear()
 end
@@ -107,6 +110,14 @@ end
 
 function Scene:getCamera()
 	return self.camera
+end
+
+function Scene:setBackgroundColor(r, g, b, a)
+	self.backgroundColor = {r, g, b, a or 255}
+end
+
+function Scene:getBackgroundColor()
+	return self.backgroundColor
 end
 
 return Scene
