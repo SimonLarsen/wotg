@@ -14,6 +14,7 @@ Pig.static.DASH_SPEED = 80
 Pig.static.DASH_TIME = 2
 Pig.static.TURN_TIME = 1
 Pig.static.STUNNED_TIME = 3
+
 Pig.static.MAX_HP = 30
 
 function Pig:initialize(x, y, dir)

@@ -5,6 +5,7 @@ function Terrain:initialize()
 	Entity.initialize(self, 0, 0, 10, "terrain")
 
 	self.colliders = {}
+	self.fg = Resources.getImage("fg.png")
 	self.bg = Resources.getImage("bg.png")
 end
 
@@ -13,7 +14,8 @@ function Terrain:enter()
 end
 
 function Terrain:draw()
-	love.graphics.draw(self.bg, 0, 0)
+	love.graphics.draw(self.bg, 0, self.scene:getCamera():getY()-Screen.HEIGHT/2)
+	love.graphics.draw(self.fg, 0, 0)
 end
 
 function Terrain:addBox(w, h, ox, oy)

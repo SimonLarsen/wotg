@@ -1,13 +1,14 @@
 local Slot = class("Slot", Entity)
 
 local Seed = require("ingame.Seed")
+local Fruit = require("ingame.Fruit")
 
 function Slot:initialize(x, y)
 	Entity.initialize(self, x, y, 1, "slot")
 
-	self.seed = Seed.static.TYPE_NONE
+	self.seed1 = Seed.static.TYPE_NONE
+	self.seed2 = Seed.static.TYPE_NONE
 	self.progress = 0
-
 	self.collider = BoxCollider(16, 16, 0, -50)
 end
 
@@ -31,7 +32,11 @@ function Slot:draw()
 end
 
 function Slot:isEmpty()
-	return self.seed == Seed.static.TYPE_NONE
+	return self.seed1 == Seed.static.TYPE_NONE
+end
+
+function Slot:isFull()
+	return self.seed2 ~= Seed.static.TYPE_NONE
 end
 
 function Slot:isComplete()
@@ -39,22 +44,27 @@ function Slot:isComplete()
 end
 
 function Slot:addSeed(type)
-	self.seed = type
+	if self:isFull() or self.seed1 == type then return end
+
+	if self.seed1 == Seed.static.TYPE_NONE then
+		self.seed1 = type
+	else
+		self.seed2 = type
+	end
+	self.progress = 0
 end
 
 function Slot:onCollide(o)
 	if self:isComplete() and o:getName() == "slash" then
 		self.progress = 0
-		local count = 3
-		for i=1,count do
-			self.scene:add(Seed(
-				self.x, self.y-50,
-				-25 + (i-1) * 50/(count-1),
-				love.math.random(-100, 0),
-				1
-			))
-		end
-		self.seed = Seed.static.TYPE_NONE
+		self.seed1 = Seed.static.TYPE_NONE
+		self.seed2 = Seed.static.TYPE_NONE
+		self.scene:add(Fruit(
+			self.x, self.y-50,
+			love.math.random(-20, 20),
+			love.math.random(-100, 0),
+			1
+		))
 	end
 end
 

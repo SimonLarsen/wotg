@@ -2,6 +2,8 @@ local Player = class("Player", Entity)
 
 local Keybinding = require("Keybinding")
 local Slash = require("ingame.Slash")
+local Seed = require("ingame.Seed")
+local Fruit = require("ingame.Fruit")
 
 Player.static.MOVE_SPEED = 100
 Player.static.ACCELERATION = 1600
@@ -9,8 +11,10 @@ Player.static.FRICTION = 700
 Player.static.JUMP_SPEED = 300
 Player.static.MAX_JUMPS = 2
 Player.static.ATTACK_COOLDOWN = 0.25
-
 Player.static.GRAVITY = 1000
+
+Player.static.MAX_HP = 100
+Player.static.MAX_MAGIC = 100
 
 function Player:initialize(x, y, id)
 	Entity.initialize(self, x, y, -1, "player")
@@ -23,8 +27,13 @@ function Player:initialize(x, y, id)
 	self.collider = BoxCollider(16, 22)
 	self.jumps = 0
 	self.attack_cooldown = 0
-	self.max_hp = 100
-	self.hp = self.max_hp
+
+	self.max_lives = 3
+	self.lives = self.max_lives-1
+	self.magic = 0
+	self.max_magic = Player.static.MAX_MAGIC
+	self.seeds = {3, 3, 3}
+	self.selected_seed = 1
 
 	self.animator = Animator(Resources.getAnimator("player.lua"))
 
@@ -41,9 +50,11 @@ function Player:initialize(x, y, id)
 end
 
 function Player:enter()
-	if self.terrain == nil then
-		self.terrain = self.scene:find("terrain")
-	end
+	self.terrain = self.scene:find("terrain")
+	self.hud = self.scene:find("hud")
+	self.hud:setLives(self.id, self.lives, self.max_lives)
+	self.hud:setMagic(self.id, self.magic, self.max_magic)
+	self.hud:setSeeds(self.id, self.seeds)
 end
 
 function Player:update(dt)
@@ -109,7 +120,7 @@ function Player:plant()
 	for i,v in ipairs(slots) do
 		if math.abs(self.x-v.x) < 6
 		and v.y > self.y and v.y < self.y+22
-		and v:isEmpty() then
+		and not v:isFull() then
 			v:addSeed(1)
 		end
 	end
@@ -125,23 +136,17 @@ function Player:draw()
 end
 
 function Player:gui()
-	-- Draw hp bar
-	local hpw = self.hp/self.max_hp * 80
-	local hpx
-	local hpy = 8
-	if self.id == 1 then hpx = 8
-	elseif self.id == 2 then hpx = Screen.WIDTH-88
-	end
-
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.rectangle("fill", hpx, hpy, 80, 6)
-	love.graphics.setColor(255, 16, 16)
-	love.graphics.rectangle("fill", hpx, hpy, hpw, 6)
-	love.graphics.setColor(255, 255, 255)
 end
 
 function Player:onCollide(o)
-	if o:getName() == "seed" then
+	if o:getName() == "fruit" then
+		if o:getType() == Fruit.static.TYPE_HEAL then
+			self.lives = math.cap(self.lives+1, 0, math.floor(self.max_lives))
+			self.hud:setLives(self.id, self.lives, self.max_lives)
+		elseif o:getType() == Fruit.static.TYPE_MAGIC then
+			self.magic = math.cap(self.magic+10, 0, self.max_magic)
+			self.hud:setMagic(self.id, self.magic, self.max_magic)
+		end
 		o:kill()
 	end
 end
