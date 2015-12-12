@@ -5,7 +5,8 @@ return {
 		["walk"] = { image = "pig_walk.png", fw = 32, fh = 32, ox = 16, oy = 24, delay = 0.2 },
 		["charge"] = { image = "pig_charge.png", fw = 32, fh = 32, ox = 16, oy = 24, delay = 1 },
 		["dash"] = { image = "pig_dash.png", fw = 32, fh = 32, ox = 16, oy = 24, delay = 0.12 },
-		["turn"] = { image = "pig_turn.png", fw = 32, fh = 32, ox = 16, oy = 24, delay = 1 }
+		["turn"] = { image = "pig_turn.png", fw = 32, fh = 32, ox = 16, oy = 24, delay = 1 },
+		["stunned"] = { image = "pig_stunned.png", fw = 32, fh = 32, ox = 16, oy = 24, delay = 0.2 }
 	},
 
 	properties = {
@@ -28,6 +29,10 @@ return {
 		{
 			from = "any", to = "turn",
 			property = "state", value = 4
+		},
+		{
+			from = "any", to = "stunned",
+			property = "state", value = 5
 		}
 	}
 }
