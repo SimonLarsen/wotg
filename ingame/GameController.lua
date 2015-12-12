@@ -1,25 +1,41 @@
 local GameController = class("GameController", Entity)
 
+local Player = require("ingame.Player")
+local Terrain = require("ingame.Terrain")
+local Slot = require("ingame.Slot")
+
 function GameController:initialize()
 	Entity.initialize(self)
 end
 
 function GameController:enter()
-	if self.player == nil then
-		self.player = self.scene:find("player")
-	end
-	if self.camera == nil then
-		self.camera = self.scene:getCamera()
-	end
+	self.player = self.scene:add(Player(180, 50, 1))
+	self.camera = self.scene:getCamera()
+
+	local terrain = self.scene:add(Terrain())
+	terrain:addBox(2*Screen.WIDTH, 16, Screen.WIDTH/2, Screen.HEIGHT-8)
+	terrain:addBox(64, 16, Screen.WIDTH/2, 88)
+
+	-- Left slots
+	self.scene:add(Slot(40, Screen.HEIGHT-8))
+	self.scene:add(Slot(56, Screen.HEIGHT-8))
+	-- Middle slots
+	self.scene:add(Slot(112, 88))
+	self.scene:add(Slot(128, 88))
+	-- Right slots
+	self.scene:add(Slot(184, Screen.HEIGHT-8))
+	self.scene:add(Slot(200, Screen.HEIGHT-8))
 end
 
 function GameController:update(dt)
-	local cy = math.cap(self.player.y+32, 0, Screen.HEIGHT/2)
+	local cy = Screen.HEIGHT/2
+	if self.player.y < 64 then
+		cy = math.cap(Screen.HEIGHT/2 - 1.2*(64-self.player.y), 0, Screen.HEIGHT/2)
+	end
 	self.camera:setY(cy)
 
 	if Keyboard.wasPressed("f2") then
-		local x = love.math.random(16, Screen.WIDTH-16)
-		self.scene:add(require("ingame.Seed")(x, 0, 1))
+		self.scene:add(require("ingame.Pig")(Screen.WIDTH+16, Screen.HEIGHT-24, -1))
 	end
 end
 

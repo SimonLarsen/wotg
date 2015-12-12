@@ -13,7 +13,7 @@ Player.static.ATTACK_COOLDOWN = 0.25
 Player.static.GRAVITY = 1000
 
 function Player:initialize(x, y, id)
-	Entity.initialize(self, x, y, 0, "player")
+	Entity.initialize(self, x, y, -1, "player")
 	self.id = id or 1
 
 	self.xspeed = 0
@@ -82,7 +82,7 @@ function Player:update(dt)
 		self:plant()
 	end
 
-	self.x = self.x + self.xspeed*dt
+	self.x = math.cap(self.x + self.xspeed*dt, 8, Screen.WIDTH-8)
 
 	local oldy = self.y
 	self.onGround = false
@@ -116,6 +116,11 @@ function Player:plant()
 end
 
 function Player:draw()
+	if math.abs(self.xspeed) < 2 then
+		self.animator:setProperty("state", 0)
+	else
+		self.animator:setProperty("state", 1)
+	end
 	self.animator:draw(self.x, self.y, 0, self.dir, 1)
 end
 
@@ -127,6 +132,9 @@ function Player:gui()
 	if self.id == 1 then hpx = 8
 	elseif self.id == 2 then hpx = Screen.WIDTH-88
 	end
+
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.rectangle("fill", hpx, hpy, 80, 6)
 	love.graphics.setColor(255, 16, 16)
 	love.graphics.rectangle("fill", hpx, hpy, hpw, 6)
 	love.graphics.setColor(255, 255, 255)

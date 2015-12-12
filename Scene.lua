@@ -78,7 +78,9 @@ end
 function Scene:add(e)
 	table.insert(self.entities, e)
 	e.scene = self
-	e:enter()
+	if self.hasEntered then
+		e:enter()
+	end
 	return e
 end
 

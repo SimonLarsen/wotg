@@ -5,12 +5,12 @@ Seed.static.TYPE_HP   = 1
 
 Seed.static.GRAVITY = 500
 
-function Seed:initialize(x, y, type)
+function Seed:initialize(x, y, xspeed, yspeed, type)
 	Entity.initialize(self, x, y, 1, "seed")
 
 	self.type = type
-	self.xspeed = 0
-	self.yspeed = 0
+	self.xspeed = xspeed or 0
+	self.yspeed = yspeed or 0
 	self.collider = BoxCollider(4, 8)
 end
 
@@ -29,6 +29,7 @@ function Seed:update(dt)
 	self.y = self.y + self.yspeed*dt
 	if self.terrain:checkCollision(self) then
 		self.y = oldy
+		self.xspeed = 0.5*self.xspeed
 		self.yspeed = -0.2*self.yspeed
 	end
 end
