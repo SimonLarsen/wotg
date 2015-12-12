@@ -7,3 +7,6 @@
 [submodule "tween"]
 	path = tween
 	url = https://github.com/kikito/tween.lua.git
+[submodule "slam"]
+	path = slam
+	url = https://github.com/vrld/slam.git

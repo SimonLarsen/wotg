@@ -1,7 +1,7 @@
 function love.conf(t)
     t.identity = "ld34"
     t.version = "0.9.2"
-    t.console = false
+    t.console = true
  
     t.window.title = "Ludum Dare 34"
     t.window.icon = nil

@@ -5,13 +5,21 @@ local CollisionHandler = require("CollisionHandler")
 
 function Scene:initialize()
 	self.entities = {}
-	self.camera = Camera()
+	self.camera = Camera(Screen.WIDTH/2, Screen.HEIGHT/2)
 	self.collisionHandler = CollisionHandler(self)
+	self.hasEntered = false
 
 	timer.clear()
 end
 
 function Scene:update(dt)
+	if self.hasEntered == false then
+		self.hasEntered = true
+		for i,v in ipairs(self.entities) do
+			v:enter()
+		end
+	end
+
 	for i,v in ipairs(self.entities) do
 		if v:isAlive() and v.update then
 			v:update(dt)

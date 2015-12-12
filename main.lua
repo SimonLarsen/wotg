@@ -1,3 +1,5 @@
+require("slam.slam")
+require("mymath")
 class = require("middleclass.middleclass")
 gamestate = require("hump.gamestate")
 timer = require("hump.timer")
@@ -6,10 +8,14 @@ tween = require("tween.tween")
 Screen = require("Screen")
 Keyboard = require("input.Keyboard")
 Scene = require("Scene")
+Entity = require("Entity")
+Resources = require("Resources")
 
 function love.load()
 	love.graphics.setDefaultFilter("nearest","nearest")
 	love.graphics.setLineStyle("rough")
+
+	Resources.initialize()
 
 	love.window.setMode(Screen.WIDTH*Screen.SCALE, Screen.HEIGHT*Screen.SCALE)
 
@@ -67,6 +73,8 @@ function love.run()
 
 		-- Call update and draw
 		love.update(dt)
+
+		Keyboard.clear()
 
 		if love.window.isCreated() then
 			love.graphics.clear()

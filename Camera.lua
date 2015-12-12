@@ -1,7 +1,9 @@
 local Camera = class("Camera")
 
-function Camera:initialize()
-	self:reset()
+function Camera:initialize(x, y, zoom)
+	self.x = x or 0
+	self.y = y or 0
+	self.zoom = zoom or 1
 end
 
 function Camera:setPosition(x, y)
@@ -28,12 +30,6 @@ end
 
 function Camera:getZoom()
 	return self.zoom
-end
-
-function Camera:reset()
-	self.x = 0
-	self.y = 0
-	self.zoom = 1
 end
 
 function Camera:apply()
