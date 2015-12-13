@@ -15,6 +15,15 @@ function HUD:initialize(players)
 
 	self.small_font = Resources.getImageFont("small.png")
 
+	self.seed_slots = Resources.getImage("seed_slots.png")
+	self.seed_slots_overlay = Resources.getImage("seed_slots_overlay.png")
+	self.seed_slots_quads = {
+		love.graphics.newQuad(0, 0, 18, 17, 51, 17),
+		love.graphics.newQuad(17, 0, 17, 17, 51, 17),
+		love.graphics.newQuad(33, 0, 18, 17, 51, 17),
+	}
+	self.seed_slots_offsets = { 0, 18, 33 }
+
 	self.lives = {}
 	self.max_lives = {}
 
@@ -40,10 +49,10 @@ end
 function HUD:gui()
 	-- Draw hearts
 	for i=1, math.floor(self.max_lives[1]) do
-		love.graphics.draw(self.heart_black, 10+(i-1)*10, 10, 0, 0.5, 0.5, 8, 8)
+		love.graphics.draw(self.heart_black, 11+(i-1)*10, 10, 0, 0.5, 0.5, 8, 8)
 	end
 	for i=1, self.lives[1] do
-		love.graphics.draw(self.heart, 10+(i-1)*10, 10, 0, 0.5, 0.5, 8, 8)
+		love.graphics.draw(self.heart, 11+(i-1)*10, 10, 0, 0.5, 0.5, 8, 8)
 	end
 
 	local parts = math.floor(self.max_lives[1] % 1 * 4)
@@ -59,16 +68,10 @@ function HUD:gui()
 	love.graphics.rectangle("fill", 6, 20, magic_width, 6)
 
 	-- Seed slots
-	love.graphics.setColor(0, 0, 0, 128)
-	for i=1, 3 do
-		love.graphics.rectangle("fill", (i-1)*16+7, 30, 16, 16)
-	end
-	love.graphics.setColor(0, 0, 0)
-	for i=1, 3 do
-		love.graphics.rectangle("line", (i-1)*16+7, 30, 16, 16)
-	end
+	local sel = self.selected_seed[1]
 	love.graphics.setColor(255, 255, 255)
-	love.graphics.rectangle("line", (self.selected_seed[1]-1)*16+7, 30, 16, 16)
+	love.graphics.draw(self.seed_slots, 6, 31)
+	love.graphics.draw(self.seed_slots_overlay, self.seed_slots_quads[sel], 6+self.seed_slots_offsets[sel], 31)
 
 	-- Seed counts
 	love.graphics.setFont(self.small_font)

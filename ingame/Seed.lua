@@ -7,12 +7,6 @@ Seed.static.TYPE_POWER = 3
 
 Seed.static.GRAVITY = 550
 
-local seed_colors = {
-	{255, 32, 32},
-	{32, 32, 255},
-	{32, 255, 32}
-}
-
 function Seed:initialize(x, y, xspeed, yspeed, type)
 	Entity.initialize(self, x, y, 1, "seed")
 
@@ -20,6 +14,9 @@ function Seed:initialize(x, y, xspeed, yspeed, type)
 	self.yspeed = yspeed or 0
 	self.type = type
 	self.time = 0
+
+	self.image = Resources.getImage("seeds.png")
+	self.quad = love.graphics.newQuad((self.type-1)*9, 0, 9, 9, 27, 9)
 end
 
 function Seed:enter()
@@ -29,7 +26,7 @@ end
 function Seed:update(dt)
 	self.time = self.time + dt
 	if self.collider == nil and self.time > 0.25 then
-		self.collider = BoxCollider(4, 8)
+		self.collider = BoxCollider(8, 8)
 	end
 
 	self.yspeed = self.yspeed + dt*Seed.static.GRAVITY
@@ -51,11 +48,7 @@ function Seed:update(dt)
 end
 
 function Seed:draw()
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.rectangle("fill", self.x-4, self.y-4, 8, 8)
-	love.graphics.setColor(seed_colors[self.type])
-	love.graphics.rectangle("fill", self.x-3, self.y-3, 6, 6)
-	love.graphics.setColor(255, 255, 255)
+	love.graphics.draw(self.image, self.quad, self.x, self.y, 0, 1, 1, 5, 5)
 end
 
 function Seed:getType()

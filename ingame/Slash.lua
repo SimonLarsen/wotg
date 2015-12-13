@@ -12,7 +12,7 @@ function Slash:initialize(x, y, xspeed, dir, damage, charged)
 	self.charged = charged
 
 	self.time = Slash.static.TIME
-	self.collider = BoxCollider(18, 8)
+	self.collider = BoxCollider(20, 12)
 end
 
 function Slash:update(dt)
@@ -24,13 +24,6 @@ function Slash:update(dt)
 	if self.time <= 0 then
 		self:kill()
 	end
-end
-
-function Slash:draw()
-	--[[
-	love.graphics.setColor(255, 0, 255)
-	love.graphics.rectangle("fill", self.x-9, self.y-4, 18, 8)
-	love.graphics.setColor(255, 255, 255) ]]
 end
 
 function Slash:getDamage()

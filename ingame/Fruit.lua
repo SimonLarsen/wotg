@@ -10,15 +10,6 @@ Fruit.static.TYPE_UPGRADE = 6 -- MAGIC + POWER
 
 Fruit.static.GRAVITY = 500
 
-local fruit_colors = {
-	{255, 32, 32},
-	{32, 32, 255},
-	{32, 255, 32},
-	{255, 32, 255},
-	{255, 255, 32},
-	{32, 255, 255}
-}
-
 function Fruit:initialize(x, y, xspeed, yspeed, type)
 	Entity.initialize(self, x, y, 1, "fruit")
 
@@ -26,6 +17,9 @@ function Fruit:initialize(x, y, xspeed, yspeed, type)
 	self.yspeed = yspeed or 0
 	self.type = type
 	self.time = 0
+
+	self.image = Resources.getImage("fruits.png")
+	self.quad = love.graphics.newQuad((self.type-1)*10, 0, 10, 14, 60, 14)
 end
 
 function Fruit:enter()
@@ -35,7 +29,7 @@ end
 function Fruit:update(dt)
 	self.time = self.time + dt
 	if self.collider == nil and self.time > 0.25 then
-		self.collider = BoxCollider(4, 8)
+		self.collider = BoxCollider(10, 14)
 	end
 
 	self.yspeed = self.yspeed + dt*Fruit.static.GRAVITY
@@ -52,11 +46,7 @@ function Fruit:update(dt)
 end
 
 function Fruit:draw()
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.circle("fill", self.x, self.y, 5, 16)
-	love.graphics.setColor(fruit_colors[self.type])
-	love.graphics.circle("fill", self.x, self.y, 4, 16)
-	love.graphics.setColor(255, 255, 255)
+	love.graphics.draw(self.image, self.quad, self.x, self.y, 0, 1, 1, 5, 7)
 end
 
 function Fruit:getType()

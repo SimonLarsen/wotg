@@ -3,9 +3,9 @@ return {
 
 	states = {
 		["empty"] = { image = "empty.png", fw = 1, fh = 1, delay = 1 },
-		["pop"] = { image = "leaves_pop.png", fw = 20, fh = 20, delay = 0.1 },
+		["pop"] = { image = "leaves_pop.png", fw = 20, fh = 20, delay = 0.1, loop = false },
 		["idle"] = { image = "leaves_idle.png", fw = 20, fh = 20, delay = 0.15 },
-		["wither"] = { image = "leaves_wither.png", fw = 20, fh = 20, delay = 0.1 }
+		["wither"] = { image = "leaves_wither.png", fw = 29, fh = 29, ox = 15, oy = 15, delay = 0.1, loop = false }
 	},
 
 	properties = {

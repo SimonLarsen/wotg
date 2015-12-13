@@ -72,8 +72,6 @@ function love.run()
 		love.timer.step()
 		dt = love.timer.getDelta()
 
-		if love.keyboard.isDown("lshift") then dt = dt / 4 end
-
 		-- Call update and draw
 		love.update(dt)
 

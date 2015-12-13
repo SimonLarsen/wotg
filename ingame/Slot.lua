@@ -2,13 +2,16 @@ local Slot = class("Slot", Entity)
 
 local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
+local Leaf = require("ingame.Leaf")
 
 function Slot:initialize(x, y)
 	Entity.initialize(self, x, y, 1, "slot")
 
+	self.progress = 0
+	self.swing = 0
 	self.seed1 = Seed.static.TYPE_NONE
 	self.seed2 = Seed.static.TYPE_NONE
-	self.progress = 0
+	self.fruit = Fruit.static.TYPE_NONE
 	self.collider = BoxCollider(16, 16, 0, -50)
 
 	self.animator = Animator(Resources.getAnimator("slot.lua"))
@@ -17,12 +20,20 @@ function Slot:initialize(x, y)
 
 	self.leaves1_pop = 0
 	self.leaves2_pop = 0
+	self:moveLeaves()
 
-	self.leaves1_x = love.math.random(-6, 6)
-	self.leaves1_y = love.math.random(-46, -36)
+	self.img_fruits = Resources.getImage("fruits.png")
+	self.img_fruits_growing = Resources.getImage("fruits_growing.png")
+	self.fruit_quads = {}
+	for i=1, 6 do
+		self.fruit_quads[i] = love.graphics.newQuad((i-1)*10, 0, 10, 14, 60, 14)
+	end
 
-	self.leaves2_x = love.math.random(-6, 6)
-	self.leaves2_y = love.math.random(-26, -16)
+	self.img_seeds = Resources.getImage("seeds.png")
+	self.seed_quads = {}
+	for i=1, 3 do
+		self.seed_quads[i] = love.graphics.newQuad((i-1)*9, 0, 9, 9, 27, 9)
+	end
 end
 
 function Slot:update(dt)
@@ -35,6 +46,7 @@ function Slot:update(dt)
 			self.leaves1_pop = self.leaves1_pop - dt
 			if self.leaves1_pop <= 0 then
 				self.leaves1:setProperty("pop", true)
+				self.swing = 0.6
 			end
 		end
 		if self.leaves2_pop > 0 then
@@ -43,18 +55,48 @@ function Slot:update(dt)
 				self.leaves2:setProperty("pop", true)
 			end
 		end
-		self.progress = math.cap(self.progress + dt/4, 0, 1)
+		if self.leaves1_pop <= 0 then
+			self.progress = math.cap(self.progress + dt/4, 0, 1)
+		end
+		if self:isComplete() then
+			self.swing = math.max(self.swing - dt, 0)
+		end
 	end
 end
 
 function Slot:draw()
-	love.graphics.setColor(255, 0, 0)
-	love.graphics.circle("fill", self.x, self.y, 4, 16)
-	love.graphics.setColor(255, 255, 255)
-
+	-- Seeds
+	if not self:isEmpty() then
+		if self:isFull() then
+			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed1], self.x-2, self.y, 0, 1, 1, 5, 5)
+			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed2], self.x+2, self.y+1, 0, 1, 1, 5, 5)
+		else
+			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed1], self.x, self.y, 0, 1, 1, 5, 5)
+		end
+	end
+	-- Leaves
 	self.animator:draw(self.x, self.y)
 	self.leaves1:draw(self.x+self.leaves1_x, self.y+self.leaves1_y)
 	self.leaves2:draw(self.x+self.leaves2_x, self.y+self.leaves2_y)
+
+	-- Fruits
+	if not self:isEmpty() then
+		if self:isComplete() then
+			love.graphics.draw(
+				self.img_fruits, self.fruit_quads[self.fruit],
+				self.x+self.leaves1_x, self.y+self.leaves1_y-3,
+				math.cos(love.timer.getTime()*20)*self.swing,
+				self.progress, self.progress, 5, 4
+			)
+		else
+			love.graphics.draw(
+				self.img_fruits_growing, self.fruit_quads[self.fruit],
+				self.x+self.leaves1_x, self.y+self.leaves1_y,
+				0,
+				self.progress, self.progress, 5, 7
+			)
+		end
+	end
 end
 
 function Slot:isEmpty()
@@ -67,6 +109,13 @@ end
 
 function Slot:isComplete()
 	return self.progress >= 1
+end
+
+function Slot:moveLeaves()
+	self.leaves1_x = love.math.random(-6, 6)
+	self.leaves1_y = love.math.random(-46, -36)
+	self.leaves2_x = love.math.random(-6, 6)
+	self.leaves2_y = love.math.random(-26, -16)
 end
 
 function Slot:addSeed(type)
@@ -86,6 +135,8 @@ function Slot:addSeed(type)
 	self.animator:setProperty("plant", true)
 	self.leaves1_pop = 0.7
 	self.leaves2_pop = 0.5
+	self:moveLeaves()
+	self.fruit = self:getFruit()
 
 	return true
 end
@@ -106,16 +157,21 @@ function Slot:onCollide(o)
 		self.progress = 0
 		local fruit_type = self:getFruit()
 		self.scene:add(Fruit(
-			self.x, self.y-50,
+			self.x+self.leaves1_x,
+			self.y+self.leaves1_y,
 			love.math.random(-20, 20),
 			love.math.random(-100, 0),
-			fruit_type
+			self.fruit
 		))
 		self.seed1 = Seed.static.TYPE_NONE
 		self.seed2 = Seed.static.TYPE_NONE
+		self.fruit = Fruit.static.TYPE_NONE
 		self.animator:setProperty("kill", true)
 		self.leaves1:setProperty("kill", true)
 		self.leaves2:setProperty("kill", true)
+
+		self.scene:add(Leaf(self.x+self.leaves1_x, self.y+self.leaves1_y))
+		self.scene:add(Leaf(self.x+self.leaves2_x, self.y+self.leaves2_y))
 	end
 end
 
