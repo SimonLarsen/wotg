@@ -10,11 +10,15 @@ Player.static.ACCELERATION = 1600
 Player.static.FRICTION = 700
 Player.static.JUMP_SPEED = 300
 Player.static.MAX_JUMPS = 2
-Player.static.ATTACK_COOLDOWN = 0.25
+Player.static.ATTACK_COOLDOWN = 0.15
 Player.static.GRAVITY = 1000
 
 Player.static.MAX_HP = 100
 Player.static.MAX_MAGIC = 100
+Player.static.BASE_DAMAGE = 20
+
+Player.static.STATE_RUN = 1
+Player.static.STATE_CHARGE = 2
 
 function Player:initialize(x, y, id)
 	Entity.initialize(self, x, y, -1, "player")
@@ -27,11 +31,17 @@ function Player:initialize(x, y, id)
 	self.collider = BoxCollider(16, 22)
 	self.jumps = 0
 	self.attack_cooldown = 0
+	self.charge = 0
+	self.state = Player.static.STATE_RUN
 
 	self.max_lives = 3
 	self.lives = self.max_lives-1
+
 	self.magic = 0
 	self.max_magic = Player.static.MAX_MAGIC
+
+	self.power = 1
+
 	self.seeds = {3, 3, 3}
 	self.selected_seed = 1
 
@@ -61,41 +71,54 @@ end
 function Player:update(dt)
 	self.animator:update(dt)
 
-	self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION)
+	if self.state ~= Player.static.STATE_CHARGE or self.charge > 0.2 then
+		self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION)
+	end
 	self.yspeed = self.yspeed + dt*Player.static.GRAVITY
 	self.attack_cooldown = self.attack_cooldown - dt
 
-	-- Left right movement
-	if Keyboard.isDown(self.keys:get("left")) then
-		self.dir = -1
-		self.xspeed = math.movetowards(self.xspeed, -Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
-	end
-	if Keyboard.isDown(self.keys:get("right")) then
-		self.dir = 1
-		self.xspeed = math.movetowards(self.xspeed, Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
-	end
+	if self.state == Player.static.STATE_RUN then
+		-- Left right movement
+		if Keyboard.isDown(self.keys:get("left")) then
+			self.dir = -1
+			self.xspeed = math.movetowards(self.xspeed, -Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
+		end
+		if Keyboard.isDown(self.keys:get("right")) then
+			self.dir = 1
+			self.xspeed = math.movetowards(self.xspeed, Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
+		end
 
-	if Keyboard.wasPressed(self.keys:get("jump"))
-	and self.jumps < Player.static.MAX_JUMPS then
-		self.onGround = false
-		self.yspeed = -Player.static.JUMP_SPEED
-		self.jumps = self.jumps+1
-	end
+		if Keyboard.wasPressed(self.keys:get("jump"))
+		and self.jumps < Player.static.MAX_JUMPS then
+			self.onGround = false
+			self.yspeed = -Player.static.JUMP_SPEED
+			self.jumps = self.jumps+1
+		end
 
-	if Keyboard.wasPressed(self.keys:get("attack"))
-	and self.attack_cooldown <= 0 then
-		local x = self.x + self.dir*16
-		self.scene:add(Slash(x, self.y, self.xspeed, self.dir))
-		self.attack_cooldown = Player.static.ATTACK_COOLDOWN
+		if Keyboard.wasPressed(self.keys:get("attack"))
+		and self.attack_cooldown <= 0 then
+			self.state = Player.static.STATE_CHARGE
+			self.charge = 0
+		end
+
+		if Keyboard.wasPressed(self.keys:get("plant")) then
+			self:plant()
+		end
+	
+	elseif self.state == Player.static.STATE_CHARGE then
+		self.charge = self.charge + dt
+
+		if not Keyboard.isDown(self.keys:get("attack")) then
+			self.state = Player.static.STATE_RUN
+			self.scene:add(Slash(x, self.y, self.xspeed, self.dir, self:getDamage()))
+			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
+			self.animator:setProperty("attack", true)
+		end
 	end
 
 	if Keyboard.wasPressed(self.keys:get("toggle")) then
 		self.selected_seed = self.selected_seed % 3 + 1
 		self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
-	end
-
-	if Keyboard.wasPressed(self.keys:get("plant")) then
-		self:plant()
 	end
 
 	self.x = math.cap(self.x + self.xspeed*dt, 8, Screen.WIDTH-8)
@@ -140,10 +163,12 @@ function Player:plant()
 end
 
 function Player:draw()
-	if math.abs(self.xspeed) < 2 then
-		self.animator:setProperty("state", 0)
-	else
+	if self.state == Player.static.STATE_CHARGE then
+		self.animator:setProperty("state", 3)
+	elseif math.abs(self.xspeed) < 2 then
 		self.animator:setProperty("state", 1)
+	else
+		self.animator:setProperty("state", 2)
 	end
 	self.animator:draw(self.x, self.y, 0, self.dir, 1)
 end
@@ -161,10 +186,15 @@ function Player:onCollide(o)
 		elseif o:getType() == Fruit.static.TYPE_HEART then
 			self.max_lives = self.max_lives + 0.25
 		elseif o:getType() == Fruit.static.TYPE_UPGRADE then
+			self.power = self.power + 0.2
 		elseif o:getType() == Fruit.static.TYPE_MINION then
 		end
 		o:kill()
 	end
+end
+
+function Player:getDamage()
+	return self.power * Player.static.BASE_DAMAGE
 end
 
 return Player

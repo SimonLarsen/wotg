@@ -6,6 +6,7 @@ function Terrain:initialize()
 
 	self.colliders = {}
 	self.fg = Resources.getImage("fg.png")
+	self.mid = Resources.getImage("mid.png")
 	self.bg = Resources.getImage("bg.png")
 end
 
@@ -14,7 +15,8 @@ function Terrain:enter()
 end
 
 function Terrain:draw()
-	love.graphics.draw(self.bg, 0, self.scene:getCamera():getY()-Screen.HEIGHT/2)
+	love.graphics.draw(self.bg, 0, (self.scene:getCamera():getY()-Screen.HEIGHT/2)*0.75)
+	love.graphics.draw(self.mid, 0, (self.scene:getCamera():getY()-Screen.HEIGHT/2)/2, 0, 1, 1, 0, 80)
 	love.graphics.draw(self.fg, 0, 0)
 end
 

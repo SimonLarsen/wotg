@@ -15,7 +15,7 @@ Pig.static.DASH_TIME = 2
 Pig.static.TURN_TIME = 1
 Pig.static.STUNNED_TIME = 3
 
-Pig.static.MAX_HP = 30
+Pig.static.MAX_HP = 50
 
 function Pig:initialize(x, y, dir)
 	Enemy.initialize(self, x, y, 0, "pig")
@@ -92,7 +92,7 @@ function Pig:onCollide(o)
 	if self.blink <= 0 and not self:isStunned() then
 		if o:getName() == "slash" then
 			self.blink = 0.25
-			self.hp = self.hp - 10
+			self.hp = self.hp - o:getDamage()
 			if self.hp <= 0 then
 				self:setStunned()
 				self.state = Pig.static.STATE_STUNNED
