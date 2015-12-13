@@ -5,7 +5,8 @@ return {
 		["idle"] = { image = "player_idle.png", fw = 16, fh = 32, oy = 20, delay = 1 },
 		["run"] = { image = "player_run.png", fw = 18, fh = 32, oy = 20, delay = 0.1 },
 		["charge"] = { image = "player_charge.png", fw = 36, fh = 32, ox = 11, oy = 20, delay = 0.02, loop = false },
-		["attack"] = { image = "player_attack.png", fw = 36, fh = 32, ox = 11, oy = 20, delay = 0.05 }
+		["attack"] = { image = "player_attack.png", fw = 36, fh = 32, ox = 11, oy = 20, delay = 0.05 },
+		["hurt"] = { image = "player_hurt.png", fw = 18, fh = 32, oy = 20, delay = 0.25 }
 	},
 
 	properties = {
@@ -25,6 +26,14 @@ return {
 		{
 			from = "any", to = "charge",
 			property = "state", value = 3
+		},
+		{
+			from = "any", to = "hurt",
+			property = "state", value = 4
+		},
+		{
+			from = "hurt", to = "idle",
+			property = "_finished", value = true
 		},
 		{
 			from = "any", to = "attack",

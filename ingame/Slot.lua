@@ -44,7 +44,11 @@ function Slot:isComplete()
 end
 
 function Slot:addSeed(type)
-	if self:isFull() or self.seed1 == type then return false end
+	if self:isFull()
+	or self.seed1 == type
+	or self:isComplete() then
+		return false
+	end
 
 	if self.seed1 == Seed.static.TYPE_NONE then
 		self.seed1 = type

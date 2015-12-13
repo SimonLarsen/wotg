@@ -22,9 +22,9 @@ local fruit_colors = {
 function Fruit:initialize(x, y, xspeed, yspeed, type)
 	Entity.initialize(self, x, y, 1, "fruit")
 
-	self.type = type
 	self.xspeed = xspeed or 0
 	self.yspeed = yspeed or 0
+	self.type = type
 
 	self.collider = BoxCollider(4, 8)
 end
