@@ -20,7 +20,7 @@ Player.static.CHARGE_TIME = 0.6
 Player.static.HURT_TIME = 0.25
 Player.static.BLINK_TIME = 2
 
-Player.static.STATE_IDLE    = 1
+Player.static.STATE_IDLE   = 1
 Player.static.STATE_CHARGE = 2
 Player.static.STATE_HURT   = 3
 
@@ -107,6 +107,9 @@ function Player:update(dt)
 		self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION/4)
 		self.charge = self.charge + dt
 
+		if Keyboard.isDown(self.keys:get("left")) then self.dir = -1 end
+		if Keyboard.isDown(self.keys:get("right")) then self.dir = 1 end
+
 		if not Keyboard.isDown(self.keys:get("attack")) then
 			self.state = Player.static.STATE_IDLE
 			if not self.onGround then self.yspeed = -60 end
@@ -130,8 +133,9 @@ function Player:update(dt)
 	if Keyboard.wasPressed(self.keys:get("jump"))
 	and self.jumps < Player.static.MAX_JUMPS then
 		self.onGround = false
-		self.yspeed = -Player.static.JUMP_SPEED
+		self.yspeed = math.min(self.yspeed, -Player.static.JUMP_SPEED)
 		self.jumps = self.jumps+1
+		self.animator:setProperty("jump", true)
 	end
 
 	if Keyboard.wasPressed(self.keys:get("toggle")) then
@@ -147,12 +151,10 @@ function Player:update(dt)
 	if self.yspeed > 0 then
 		local collided, o = self.terrain:checkCollision(self)
 		if collided then
-			if oldy+self.collider.h/2 < o.y-o.collider.h/2 then
-				self.y = oldy
-				if self.yspeed > 0 then
-					self.onGround = true
-					self.jumps = 0
-				end
+			if oldy+self.collider.h/2 <= o.y-o.collider.h/2 then
+				self.y = o.y-o.collider.h/2-self.collider.h/2-0.000001
+				self.onGround = true
+				self.jumps = 0
 				self.yspeed = 0
 			end
 		end
@@ -185,10 +187,16 @@ function Player:draw()
 		self.animator:setProperty("state", 3)
 	elseif self.state == Player.static.STATE_HURT then
 		self.animator:setProperty("state", 4)
-	elseif math.abs(self.xspeed) < 2 then
-		self.animator:setProperty("state", 1)
+	elseif self.onGround == false then
+		if self.yspeed > 0 then
+			self.animator:setProperty("state", 5)
+		end
 	else
-		self.animator:setProperty("state", 2)
+		if math.abs(self.xspeed) < 2 then
+			self.animator:setProperty("state", 1)
+		else
+			self.animator:setProperty("state", 2)
+		end
 	end
 
 	self.animator:draw(self.x, self.y, 0, self.dir, 1)
