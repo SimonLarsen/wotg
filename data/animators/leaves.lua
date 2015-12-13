@@ -9,11 +9,13 @@ return {
 	},
 
 	properties = {
+		["reset"] = { value = false, isTrigger = true },
 		["pop"] = { value = false, isTrigger = true },
 		["kill"] = { value = false, isTrigger = true }
 	},
 
 	transitions = {
+		{ from = "any", to = "empty", property = "reset", value = true },
 		{ from = "any", to = "pop", property = "pop", value = true },
 		{ from = "pop", to = "idle", property = "_finished", value = true },
 		{ from = "any", to = "wither", property = "kill", value = true },

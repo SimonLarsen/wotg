@@ -112,7 +112,6 @@ function Player:update(dt)
 
 		if not Keyboard.isDown(self.keys:get("attack")) then
 			self.state = Player.static.STATE_IDLE
-			if not self.onGround then self.yspeed = -60 end
 			local x = self.x + 16*self.dir
 			local charged = self.charge >= Player.static.CHARGE_TIME
 			self.scene:add(Slash(x, self.y, self.xspeed, self.dir, self:getDamage(), charged))
@@ -128,7 +127,6 @@ function Player:update(dt)
 			self.state = Player.static.STATE_IDLE
 		end
 	end
-
 
 	if Keyboard.wasPressed(self.keys:get("jump"))
 	and self.jumps < Player.static.MAX_JUMPS then

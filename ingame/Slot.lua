@@ -12,7 +12,7 @@ function Slot:initialize(x, y)
 	self.seed1 = Seed.static.TYPE_NONE
 	self.seed2 = Seed.static.TYPE_NONE
 	self.fruit = Fruit.static.TYPE_NONE
-	self.collider = BoxCollider(16, 16, 0, -50)
+	self.collider = BoxCollider(16, 16, 0, 0)
 
 	self.animator = Animator(Resources.getAnimator("slot.lua"))
 	self.leaves1 = Animator(Resources.getAnimator("leaves.lua"))
@@ -116,6 +116,8 @@ function Slot:moveLeaves()
 	self.leaves1_y = love.math.random(-46, -36)
 	self.leaves2_x = love.math.random(-6, 6)
 	self.leaves2_y = love.math.random(-26, -16)
+	self.collider.ox = self.leaves1_x
+	self.collider.oy = self.leaves1_y
 end
 
 function Slot:addSeed(type)
@@ -136,6 +138,8 @@ function Slot:addSeed(type)
 	self.leaves1_pop = 0.7
 	self.leaves2_pop = 0.5
 	self:moveLeaves()
+	self.leaves1:setProperty("reset", true)
+	self.leaves2:setProperty("reset", true)
 	self.fruit = self:getFruit()
 
 	return true

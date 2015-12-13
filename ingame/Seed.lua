@@ -41,7 +41,7 @@ function Seed:update(dt)
 	local oldy = self.y
 	self.y = self.y + self.yspeed*dt
 	if self.terrain:checkCollision(self) then
-		self.y = oldy
+		self.y = math.min(oldy, Screen.HEIGHT-20)
 		self.xspeed = 0.5*self.xspeed
 		self.yspeed = -0.2*self.yspeed
 	end
