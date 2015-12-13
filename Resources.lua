@@ -9,7 +9,7 @@ local sounds = {}
 local music
 
 function Resources.initialize()
-
+	Resources.getImageFont("small.png", " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.,:;-?!'*")
 end
 
 function Resources.getImage(path)

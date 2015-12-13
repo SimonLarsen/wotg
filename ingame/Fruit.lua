@@ -3,12 +3,21 @@ local Fruit = class("Fruit", Entity)
 Fruit.static.TYPE_NONE    = 0
 Fruit.static.TYPE_HEAL    = 1
 Fruit.static.TYPE_MAGIC   = 2
-Fruit.static.TYPE_POWER   = 4
-Fruit.static.TYPE_HEART   = Fruit.static.TYPE_HEAL + Fruit.static.TYPE_MAGIC
-Fruit.static.TYPE_UPGRADE = Fruit.static.TYPE_HEAL + Fruit.static.TYPE_POWER
-Fruit.static.TYPE_MINION  = Fruit.static.TYPE_MAGIC + Fruit.static.TYPE_POWER
+Fruit.static.TYPE_POWER   = 3
+Fruit.static.TYPE_MINION  = 4 -- HEAL + MAGIC
+Fruit.static.TYPE_HEART   = 5 -- HEAL + POWER
+Fruit.static.TYPE_UPGRADE = 6 -- MAGIC + POWER
 
 Fruit.static.GRAVITY = 500
+
+local fruit_colors = {
+	{255, 32, 32},
+	{32, 32, 255},
+	{32, 255, 32},
+	{255, 32, 255},
+	{255, 255, 32},
+	{32, 255, 255}
+}
 
 function Fruit:initialize(x, y, xspeed, yspeed, type)
 	Entity.initialize(self, x, y, 1, "fruit")
@@ -41,7 +50,7 @@ end
 function Fruit:draw()
 	love.graphics.setColor(0, 0, 0)
 	love.graphics.circle("fill", self.x, self.y, 5, 16)
-	love.graphics.setColor(255, 64, 0)
+	love.graphics.setColor(fruit_colors[self.type])
 	love.graphics.circle("fill", self.x, self.y, 4, 16)
 	love.graphics.setColor(255, 255, 255)
 end

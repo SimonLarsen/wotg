@@ -19,14 +19,14 @@ function GameController:enter()
 	self.camera = self.scene:getCamera()
 
 	-- Left slots
-	self.scene:add(Slot(40, Screen.HEIGHT-8))
+	self.scene:add(Slot(36, Screen.HEIGHT-8))
 	self.scene:add(Slot(56, Screen.HEIGHT-8))
 	-- Middle slots
-	self.scene:add(Slot(112, 88))
-	self.scene:add(Slot(128, 88))
+	self.scene:add(Slot(110, 88))
+	self.scene:add(Slot(130, 88))
 	-- Right slots
 	self.scene:add(Slot(184, Screen.HEIGHT-8))
-	self.scene:add(Slot(200, Screen.HEIGHT-8))
+	self.scene:add(Slot(204, Screen.HEIGHT-8))
 end
 
 function GameController:update(dt)

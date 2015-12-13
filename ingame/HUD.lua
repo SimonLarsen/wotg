@@ -13,6 +13,8 @@ function HUD:initialize(players)
 		Resources.getImage("heart_part3.png")
 	}
 
+	self.small_font = Resources.getImageFont("small.png")
+
 	self.lives = {}
 	self.max_lives = {}
 
@@ -20,6 +22,7 @@ function HUD:initialize(players)
 	self.max_magic = {}
 
 	self.seeds = {}
+	self.selected_seed = {}
 
 	self.players = players
 	for player=1, self.players do
@@ -30,6 +33,7 @@ function HUD:initialize(players)
 		self.max_magic[player] = 100
 
 		self.seeds[player] = {0, 0, 0}
+		self.selected_seed[player] = 1
 	end
 end
 
@@ -44,7 +48,7 @@ function HUD:gui()
 
 	local parts = math.floor(self.max_lives[1] % 1 * 4)
 	if parts >= 1 and parts <= 3 then
-		love.graphics.draw(self.heart_part[parts], math.floor(self.max_lives[1])*10+20, 10, 0, 0.5, 0.5, 8, 8)
+		love.graphics.draw(self.heart_part[parts], math.floor(self.max_lives[1])*10+10, 10, 0, 0.5, 0.5, 8, 8)
 	end
 
 	-- Draw magic bar
@@ -59,11 +63,18 @@ function HUD:gui()
 	for i=1, 3 do
 		love.graphics.rectangle("fill", (i-1)*16+7, 30, 16, 16)
 	end
-	love.graphics.setColor(0, 0, 0, 255)
+	love.graphics.setColor(0, 0, 0)
 	for i=1, 3 do
 		love.graphics.rectangle("line", (i-1)*16+7, 30, 16, 16)
 	end
-	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.rectangle("line", (self.selected_seed[1]-1)*16+7, 30, 16, 16)
+
+	-- Seed counts
+	love.graphics.setFont(self.small_font)
+	for i=1, 3 do
+		love.graphics.print(self.seeds[1][i], (i-1)*16+15, 38)
+	end
 end
 
 function HUD:setLives(player, lives, max_lives)
@@ -76,8 +87,9 @@ function HUD:setMagic(player, magic, max_magic)
 	self.max_magic[player] = max_magic
 end
 
-function HUD:setSeeds(player, seeds)
+function HUD:setSeeds(player, seeds, selected_seed)
 	self.seeds[player] = seeds
+	self.selected_seed[player] = selected_seed
 end
 
 return HUD

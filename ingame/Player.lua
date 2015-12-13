@@ -43,9 +43,10 @@ function Player:initialize(x, y, id)
 		self.keys:add("right","right")
 		self.keys:add("down","down")
 		self.keys:add("left","left")
-		self.keys:add("action", "a")
+		self.keys:add("plant", "s")
 		self.keys:add("jump", "d")
 		self.keys:add("attack", "f")
+		self.keys:add("toggle", "e")
 	end
 end
 
@@ -54,7 +55,7 @@ function Player:enter()
 	self.hud = self.scene:find("hud")
 	self.hud:setLives(self.id, self.lives, self.max_lives)
 	self.hud:setMagic(self.id, self.magic, self.max_magic)
-	self.hud:setSeeds(self.id, self.seeds)
+	self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
 end
 
 function Player:update(dt)
@@ -88,8 +89,12 @@ function Player:update(dt)
 		self.attack_cooldown = Player.static.ATTACK_COOLDOWN
 	end
 
-	if Keyboard.isDown(self.keys:get("down"))
-	and Keyboard.wasPressed(self.keys:get("action")) then
+	if Keyboard.wasPressed(self.keys:get("toggle")) then
+		self.selected_seed = self.selected_seed % 3 + 1
+		self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
+	end
+
+	if Keyboard.wasPressed(self.keys:get("plant")) then
 		self:plant()
 	end
 
@@ -111,17 +116,25 @@ function Player:update(dt)
 			end
 		end
 	end
+	
+	-- Update HUD
+	self.hud:setLives(self.id, self.lives, self.max_lives)
+	self.hud:setMagic(self.id, self.magic, self.max_magic)
+	self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
 end
 
 function Player:plant()
 	if self.onGround == false then return end
+	if self.seeds[self.selected_seed] == 0 then return end
 
 	local slots = self.scene:findAll("slot")
 	for i,v in ipairs(slots) do
-		if math.abs(self.x-v.x) < 6
+		if math.abs(self.x-v.x) < 10
 		and v.y > self.y and v.y < self.y+22
 		and not v:isFull() then
-			v:addSeed(1)
+			if v:addSeed(self.selected_seed) then
+				self.seeds[self.selected_seed] = self.seeds[self.selected_seed]-1
+			end
 		end
 	end
 end
@@ -142,10 +155,13 @@ function Player:onCollide(o)
 	if o:getName() == "fruit" then
 		if o:getType() == Fruit.static.TYPE_HEAL then
 			self.lives = math.cap(self.lives+1, 0, math.floor(self.max_lives))
-			self.hud:setLives(self.id, self.lives, self.max_lives)
 		elseif o:getType() == Fruit.static.TYPE_MAGIC then
-			self.magic = math.cap(self.magic+10, 0, self.max_magic)
-			self.hud:setMagic(self.id, self.magic, self.max_magic)
+			self.magic = math.cap(self.magic+25, 0, self.max_magic)
+		elseif o:getType() == Fruit.static.TYPE_POWER then
+		elseif o:getType() == Fruit.static.TYPE_HEART then
+			self.max_lives = self.max_lives + 0.25
+		elseif o:getType() == Fruit.static.TYPE_UPGRADE then
+		elseif o:getType() == Fruit.static.TYPE_MINION then
 		end
 		o:kill()
 	end

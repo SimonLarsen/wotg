@@ -44,7 +44,7 @@ function Slot:isComplete()
 end
 
 function Slot:addSeed(type)
-	if self:isFull() or self.seed1 == type then return end
+	if self:isFull() or self.seed1 == type then return false end
 
 	if self.seed1 == Seed.static.TYPE_NONE then
 		self.seed1 = type
@@ -52,19 +52,33 @@ function Slot:addSeed(type)
 		self.seed2 = type
 	end
 	self.progress = 0
+
+	return true
+end
+
+function Slot:getFruit()
+	if self.seed2 == Seed.static.TYPE_NONE then
+		return self.seed1
+	end
+
+	local total = self.seed1 + self.seed2
+	if total == 1+2 then return Fruit.static.TYPE_MINION end
+	if total == 1+3 then return Fruit.static.TYPE_HEART end
+	if total == 2+3 then return Fruit.static.TYPE_UPGRADE end
 end
 
 function Slot:onCollide(o)
 	if self:isComplete() and o:getName() == "slash" then
 		self.progress = 0
-		self.seed1 = Seed.static.TYPE_NONE
-		self.seed2 = Seed.static.TYPE_NONE
+		local fruit_type = self:getFruit()
 		self.scene:add(Fruit(
 			self.x, self.y-50,
 			love.math.random(-20, 20),
 			love.math.random(-100, 0),
-			1
+			fruit_type
 		))
+		self.seed1 = Seed.static.TYPE_NONE
+		self.seed2 = Seed.static.TYPE_NONE
 	end
 end
 
