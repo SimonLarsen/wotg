@@ -11,7 +11,8 @@ Bird.static.STATE_STUNNED = 5
 
 Bird.static.GRAVITY = 400
 Bird.static.FLY_SPEED = 30
-Bird.static.DASH_SPEED = 130
+Bird.static.SEEK_SPEED = 50
+Bird.static.DASH_SPEED = 110
 Bird.static.DASH_TIME = 1
 Bird.static.DASH_COOLDOWN = 3
 Bird.static.STUNNED_TIME = 4
@@ -76,13 +77,6 @@ function Bird:update(dt)
 			else
 				slot_los, slot = self:canSeeSlot()
 				if slot_los then
-					local dx = slot.x+slot.leaves1_x - self.x
-					local dy = slot.y+slot.leaves1_y - self.y
-					local len = math.sqrt(dx^2 + dy^2)
-
-					self.target_xspeed = dx / len * Bird.static.DASH_SPEED
-					self.target_yspeed = dy / len * Bird.static.DASH_SPEED
-					self.dir = math.sign(self.target_xspeed)
 					self.slot = slot
 					self.state = Bird.static.STATE_SEEK
 				end
@@ -104,15 +98,29 @@ function Bird:update(dt)
 
 	elseif self.state == Bird.static.STATE_SEEK then
 		local dx = self.slot.x+self.slot.leaves1_x - self.x
-		local dy = self.slot.y+self.slot.leaves2_x - self.y
+		local dy = self.slot.y+self.slot.leaves1_y - self.y
+		local len = math.sqrt(dx^2 + dy^2)
+		self.target_xspeed = dx / len * Bird.static.SEEK_SPEED
+		self.target_yspeed = dy / len * Bird.static.SEEK_SPEED
+		self.dir = math.sign(self.target_xspeed)
+		self.xspeed = math.movetowards(self.xspeed, self.target_xspeed, Bird.static.ACCELERATION*dt)
+		self.yspeed = math.movetowards(self.yspeed, self.target_yspeed, Bird.static.ACCELERATION*dt)
+
+		local dx = self.slot.x+self.slot.leaves1_x - self.x
+		local dy = self.slot.y+self.slot.leaves1_y - self.y
 		local sqdist = dx^2 + dy^2
 
-		if sqdist < 20^2 then
-			self.state = Bird.static.STATE_END
+		if sqdist < 4^2 then
+			self.x = self.slot.x+self.slot.leaves1_x - self.dir*6
+			self.y = self.slot.y+self.slot.leaves1_y
+			self.state = Bird.static.STATE_EAT
 		end
 		if self.slot:isEmpty() == true then
 			self.state = Bird.static.STATE_FLY
 		end
+
+		self.x = self.x + self.xspeed * dt
+		self.y = math.min(self.y + self.yspeed * dt, Screen.HEIGHT-24)
 
 	elseif self.state == Bird.static.STATE_EAT then
 
@@ -122,12 +130,22 @@ function Bird:update(dt)
 
 		self.x = self.x + self.xspeed * dt
 
+		if self.x < 16 then self.xspeed = 50 end
+		if self.x > Screen.WIDTH-16 then self.xspeed = -50 end
+
 		local oldy = self.y
 		self.y = self.y + self.yspeed * dt
-		if self.terrain:checkCollision(self) then
-			self.y = oldy
-			self.xspeed = 0.5*self.xspeed
-			self.yspeed = -0.15*self.yspeed
+		local collided, o = self.terrain:checkCollision(self)
+		if collided then
+			if oldy+self.collider.h/2 <= o.y-o.collider.h/2 then
+				self.y = oldy
+				self.xspeed = 0.5*self.xspeed
+				self.yspeed = -0.15*self.yspeed
+			end
+		end
+
+		if self.time <= 0 then
+			self:kill()
 		end
 	end
 end
@@ -140,7 +158,7 @@ function Bird:canSeePlayer()
 		local ydist = math.abs(self.y - v.y)
 		local sqdist = xdist^2 + ydist^2
 
-		if sqdist < 80^2
+		if sqdist < 80^2 and xdist > 16
 		and (best_player == nil or sqdist < min_sqdist) then
 			min_sqdist = sqdist
 			best_player = v
@@ -159,7 +177,7 @@ function Bird:canSeeSlot()
 			local ydist = math.abs(self.y - v.y)
 			local sqdist = xdist^2 + ydist^2
 
-			if sqdist < 100^2
+			if sqdist < 120^2
 			and (best_slot == nil or sqdist < min_sqdist) then
 				min_sqdist = sqdist
 				best_slot = v

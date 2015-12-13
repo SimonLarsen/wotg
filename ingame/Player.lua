@@ -114,7 +114,7 @@ function Player:update(dt)
 			self.state = Player.static.STATE_IDLE
 			local x = self.x + 16*self.dir
 			local charged = self.charge >= Player.static.CHARGE_TIME
-			self.scene:add(Slash(x, self.y, self.xspeed, self.dir, self:getDamage(), charged))
+			self.scene:add(Slash(x, self.y, self.xspeed, self.yspeed, self.dir, self:getDamage(), charged))
 			self.charge = 0
 			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
 			self.animator:setProperty("attack", true)

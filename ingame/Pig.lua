@@ -145,7 +145,6 @@ function Pig:onCollide(o)
 	if o:getName() == "slash" and self.blink <= 0 then
 		if self:isStunned() then
 			if o:isCharged() then
-				-- spawn seed
 				self.scene:add(Seed(self.x, self.y,
 					o.dir*60,
 					love.math.random(-80, -50),

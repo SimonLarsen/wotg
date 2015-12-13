@@ -4,6 +4,9 @@ local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
 local Leaf = require("ingame.Leaf")
 
+Slot.static.SINGLE_GROW_TIME = 6
+Slot.static.DOUBLE_GROW_TIME = 10
+
 function Slot:initialize(x, y)
 	Entity.initialize(self, x, y, 1, "slot")
 
@@ -56,7 +59,11 @@ function Slot:update(dt)
 			end
 		end
 		if self.leaves1_pop <= 0 then
-			self.progress = math.cap(self.progress + dt/4, 0, 1)
+			if self:isFull() then
+				self.progress = math.cap(self.progress + dt/Slot.static.DOUBLE_GROW_TIME, 0, 1)
+			else
+				self.progress = math.cap(self.progress + dt/Slot.static.SINGLE_GROW_TIME, 0, 1)
+			end
 		end
 		if self:isComplete() then
 			self.swing = math.max(self.swing - dt, 0)
