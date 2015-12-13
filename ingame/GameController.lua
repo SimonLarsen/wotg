@@ -39,6 +39,9 @@ function GameController:update(dt)
 	if Keyboard.wasPressed("f2") then
 		self.scene:add(require("ingame.Pig")(Screen.WIDTH+16, Screen.HEIGHT-24, -1))
 	end
+	if Keyboard.wasPressed("f3") then
+		self.scene:add(require("ingame.Bird")(-16, 100, 1))
+	end
 end
 
 return GameController

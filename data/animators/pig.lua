@@ -14,25 +14,10 @@ return {
 	},
 
 	transitions = {
-		{
-			from = "any", to = "walk",
-			property = "state", value = 1
-		},
-		{
-			from = "any", to = "charge",
-			property = "state", value = 2
-		},
-		{
-			from = "any", to = "dash",
-			property = "state", value = 3
-		},
-		{
-			from = "any", to = "eat",
-			property = "state", value = 4
-		},
-		{
-			from = "any", to = "stunned",
-			property = "state", value = 5
-		}
+		{ from = "any", to = "walk", property = "state", value = 1 },
+		{ from = "any", to = "charge", property = "state", value = 2 },
+		{ from = "any", to = "dash", property = "state", value = 3 },
+		{ from = "any", to = "eat", property = "state", value = 4 },
+		{ from = "any", to = "stunned", property = "state", value = 5 }
 	}
 }

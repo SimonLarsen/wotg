@@ -46,11 +46,8 @@ function Pig:update(dt)
 
 	if self.state == Pig.static.STATE_WALK then
 		self.xspeed = math.movetowards(self.xspeed, self.dir*Pig.static.WALK_SPEED, dt*200)
-		if self.x < 32 then
-			self.dir = 1
-		elseif self.x > Screen.WIDTH-32 then
-			self.dir = -1
-		end
+		if self.x < 32 then self.dir = 1 end
+		if self.x > Screen.WIDTH-32 then self.dir = -1 end
 
 		local player_los, player = self:canSeePlayer()
 		if player_los then
@@ -105,12 +102,12 @@ function Pig:update(dt)
 end
 
 function Pig:canSeePlayer()
-	local best_dist = 10000
+	local min_dist = 50000
 	local best_player
 	for i,v in ipairs(self.players) do
 		local xdist = math.abs(self.x - v.x)
 		local ydist = math.abs(self.y - v.y)
-		if ydist < 16 and xdist < 80 and xdist < best_dist then
+		if ydist < 16 and xdist < 80 and xdist < min_dist then
 			best_player = v
 		end
 	end
@@ -119,12 +116,12 @@ function Pig:canSeePlayer()
 end
 
 function Pig:canSeeSlot()
-	local best_dist = 10000
+	local min_dist = 50000
 	local best_slot
 	for i,v in ipairs(self.slots) do
 		if not v:isEmpty() then
 			local xdist = math.abs(self.x - v.x)
-			if v.y > self.y and v.y < self.y+22 and xdist < best_dist then
+			if v.y > self.y and v.y < self.y+22 and xdist < min_dist then
 				best_slot = v
 			end
 		end

@@ -215,9 +215,6 @@ function Player:draw()
 	end
 end
 
-function Player:gui()
-end
-
 function Player:onCollide(o)
 	if o:getName() == "fruit" then
 		if o:getType() == Fruit.static.TYPE_HEAL then
@@ -236,7 +233,8 @@ function Player:onCollide(o)
 		self.seeds[o:getType()] = self.seeds[o:getType()] + 1
 		o:kill()
 	elseif self.blink <= 0 then
-		if o:getName() == "pig" and o:isStunned() == false then
+		if (o:getName() == "pig" or o:getName() == "bird")
+		and o:isStunned() == false then
 			self.state = Player.static.STATE_HURT
 			self.time = Player.static.HURT_TIME
 			self.blink = Player.static.BLINK_TIME
