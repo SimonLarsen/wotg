@@ -19,8 +19,7 @@ function Seed:initialize(x, y, xspeed, yspeed, type)
 	self.xspeed = xspeed or 0
 	self.yspeed = yspeed or 0
 	self.type = type
-
-	self.collider = BoxCollider(4, 8)
+	self.time = 0
 end
 
 function Seed:enter()
@@ -28,6 +27,11 @@ function Seed:enter()
 end
 
 function Seed:update(dt)
+	self.time = self.time + dt
+	if self.collider == nil and self.time > 0.25 then
+		self.collider = BoxCollider(4, 8)
+	end
+
 	self.yspeed = self.yspeed + dt*Seed.static.GRAVITY
 	if self.x < 8 then
 		self.xspeed = 8

@@ -10,10 +10,39 @@ function Slot:initialize(x, y)
 	self.seed2 = Seed.static.TYPE_NONE
 	self.progress = 0
 	self.collider = BoxCollider(16, 16, 0, -50)
+
+	self.animator = Animator(Resources.getAnimator("slot.lua"))
+	self.leaves1 = Animator(Resources.getAnimator("leaves.lua"))
+	self.leaves2 = Animator(Resources.getAnimator("leaves.lua"))
+
+	self.leaves1_pop = 0
+	self.leaves2_pop = 0
+
+	self.leaves1_x = love.math.random(-6, 6)
+	self.leaves1_y = love.math.random(-46, -36)
+
+	self.leaves2_x = love.math.random(-6, 6)
+	self.leaves2_y = love.math.random(-26, -16)
 end
 
 function Slot:update(dt)
+	self.animator:update(dt)
+	self.leaves1:update(dt)
+	self.leaves2:update(dt)
+
 	if not self:isEmpty() then
+		if self.leaves1_pop > 0 then
+			self.leaves1_pop = self.leaves1_pop - dt
+			if self.leaves1_pop <= 0 then
+				self.leaves1:setProperty("pop", true)
+			end
+		end
+		if self.leaves2_pop > 0 then
+			self.leaves2_pop = self.leaves2_pop - dt
+			if self.leaves2_pop <= 0 then
+				self.leaves2:setProperty("pop", true)
+			end
+		end
 		self.progress = math.cap(self.progress + dt/4, 0, 1)
 	end
 end
@@ -21,14 +50,11 @@ end
 function Slot:draw()
 	love.graphics.setColor(255, 0, 0)
 	love.graphics.circle("fill", self.x, self.y, 4, 16)
+	love.graphics.setColor(255, 255, 255)
 
-	if not self:isEmpty() then
-		love.graphics.setColor(32, 255, 32)
-		love.graphics.rectangle("fill", self.x-4, self.y-56, 8, 48)
-
-		love.graphics.setColor(255, 0, 0)
-		love.graphics.circle("fill", self.x, self.y-50, 8*self.progress, 16)
-	end love.graphics.setColor(255, 255, 255)
+	self.animator:draw(self.x, self.y)
+	self.leaves1:draw(self.x+self.leaves1_x, self.y+self.leaves1_y)
+	self.leaves2:draw(self.x+self.leaves2_x, self.y+self.leaves2_y)
 end
 
 function Slot:isEmpty()
@@ -55,7 +81,11 @@ function Slot:addSeed(type)
 	else
 		self.seed2 = type
 	end
+
 	self.progress = 0
+	self.animator:setProperty("plant", true)
+	self.leaves1_pop = 0.7
+	self.leaves2_pop = 0.5
 
 	return true
 end
@@ -83,6 +113,9 @@ function Slot:onCollide(o)
 		))
 		self.seed1 = Seed.static.TYPE_NONE
 		self.seed2 = Seed.static.TYPE_NONE
+		self.animator:setProperty("kill", true)
+		self.leaves1:setProperty("kill", true)
+		self.leaves2:setProperty("kill", true)
 	end
 end
 

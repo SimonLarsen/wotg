@@ -7,7 +7,7 @@ return {
 		["charge"] = { image = "player_charge.png", fw = 36, fh = 32, ox = 11, oy = 20, delay = 0.02, loop = false },
 		["attack"] = { image = "player_attack.png", fw = 36, fh = 32, ox = 11, oy = 20, delay = 0.05 },
 		["hurt"] = { image = "player_hurt.png", fw = 18, fh = 32, oy = 20, delay = 0.25 },
-		["jump"] = { image = "player_jump.png", fw = 18, fh = 32, oy = 20, delay = 0.15, loop = false },
+		["jump"] = { image = "player_jump.png", fw = 18, fh = 32, oy = 20, delay = 0.10, loop = false },
 		["fall"] = { image = "player_fall.png", fw = 18, fh = 32, oy = 20, delay = 0.1 }
 	},
 
