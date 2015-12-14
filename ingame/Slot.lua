@@ -6,7 +6,7 @@ local Leaf = require("ingame.Leaf")
 local Minion = require("ingame.Minion")
 
 Slot.static.SINGLE_GROW_TIME = 6
-Slot.static.DOUBLE_GROW_TIME = 10
+Slot.static.DOUBLE_GROW_TIME = 6
 
 Slot.static.MAX_HP = 4
 

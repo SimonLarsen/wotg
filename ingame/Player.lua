@@ -57,7 +57,7 @@ function Player:initialize(x, y, id)
 	self.berserk = 0
 
 	self.animator = Animator(Resources.getAnimator("player.lua"))
-	self.img_shield = Resources.getImage("shield.png")
+	self.shield_anim = Animation(Resources.getImage("shield.png"), 24, 32, 0.15)
 	self.img_berserk = Resources.getImage("berserk.png")
 
 	self.keys = Keybinding()
@@ -83,6 +83,7 @@ end
 
 function Player:update(dt)
 	self.animator:update(dt)
+	self.shield_anim:update(dt)
 
 	self.yspeed = self.yspeed + dt*Player.static.GRAVITY
 	self.attack_cooldown = self.attack_cooldown - dt
@@ -202,7 +203,8 @@ function Player:draw()
 	and (self.shield > 3 or t % 0.2 < 0.1) then
 		local r = 230*(math.cos(t*16)/2 + 0.5)
 		love.graphics.setColor(r, 230, 230)
-		love.graphics.draw(self.img_shield, self.x, self.y, 0, 1, 1, 11, 16)
+		self.shield_anim:draw(self.x, self.y)
+		--love.graphics.draw(self.img_shield, self.x, self.y, 0, 1, 1, 11, 16)
 		love.graphics.setColor(255, 255, 255)
 	end
 
@@ -275,9 +277,9 @@ function Player:onCollide(o)
 			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
 
 			local name = o:getName()
-			if name == "bird" or name == "rat" then
+			if name == "bird" or name == "rat" or name == "pig" then
 				self.lives = self.lives - 1
-			elseif name == "pig" then
+			elseif name == "boar" then
 				self.lives = self.lives - 2
 			end
 

@@ -235,8 +235,7 @@ function Bird:onCollide(o)
 			if o:isCharged() then
 				self.scene:add(Seed(self.x, self.y,
 					o.dir*60,
-					love.math.random(-80, -50),
-					Bird.static.SEED
+					love.math.random(-80, -50)
 				))
 				self:kill()
 			end

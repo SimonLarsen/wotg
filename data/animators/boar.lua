@@ -2,11 +2,11 @@ return {
 	default = "walk",
 
 	states = {
-		["walk"] = { image = "pig_walk.png", fw = 32, fh = 32, oy = 24, delay = 0.2 },
-		["charge"] = { image = "pig_charge.png", fw = 32, fh = 32, oy = 24, delay = 0.1, loop = false },
-		["dash"] = { image = "pig_dash.png", fw = 32, fh = 32, oy = 24, delay = 0.12 },
-		["eat"] = { image = "pig_eat.png", fw = 24, fh = 32, oy = 24, delay = 0.15 },
-		["stunned"] = { image = "pig_stunned.png", fw = 32, fh = 32, oy = 24, delay = 0.2 }
+		["walk"] = { image = "boar_walk.png", fw = 32, fh = 32, oy = 24, delay = 0.2 },
+		["charge"] = { image = "boar_charge.png", fw = 32, fh = 32, oy = 24, delay = 0.1, loop = false },
+		["dash"] = { image = "boar_dash.png", fw = 32, fh = 32, oy = 24, delay = 0.12 },
+		["eat"] = { image = "boar_eat.png", fw = 24, fh = 32, oy = 24, delay = 0.15 },
+		["stunned"] = { image = "boar_stunned.png", fw = 32, fh = 32, oy = 24, delay = 0.2 }
 	},
 
 	properties = {

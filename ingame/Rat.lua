@@ -192,8 +192,7 @@ function Rat:onCollide(o)
 			if o:isCharged() then
 				self.scene:add(Seed(self.x, self.y-2,
 					o.dir*60,
-					love.math.random(-80, -50),
-					Rat.static.SEED
+					love.math.random(-80, -50)
 				))
 				self:kill()
 			end

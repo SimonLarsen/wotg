@@ -12,7 +12,7 @@ function Seed:initialize(x, y, xspeed, yspeed, type)
 
 	self.xspeed = xspeed or 0
 	self.yspeed = yspeed or 0
-	self.type = type
+	self.type = type or love.math.random(1, 3)
 	self.time = 0
 
 	self.image = Resources.getImage("seeds.png")

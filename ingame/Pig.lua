@@ -15,7 +15,7 @@ Pig.static.DASH_SPEED = 80
 Pig.static.DASH_TIME = 2
 Pig.static.STUNNED_TIME = 4
 
-Pig.static.MAX_HP = 50
+Pig.static.MAX_HP = 45
 Pig.static.SEED = Seed.static.TYPE_HEAL
 
 function Pig:initialize(x, y, dir)
@@ -29,6 +29,7 @@ function Pig:initialize(x, y, dir)
 	self.blink = 0
 	self.hp = Pig.static.MAX_HP
 	self.slot = nil
+	self.view_range = 70
 
 	self.animator = Animator(Resources.getAnimator("pig.lua"))
 	self.collider = BoxCollider(18, 14)
@@ -108,7 +109,7 @@ function Pig:canSeePlayer()
 	for i,v in ipairs(self.players) do
 		local xdist = math.abs(self.x - v.x)
 		local ydist = math.abs(self.y - v.y)
-		if ydist < 16 and xdist < 80 and xdist < min_dist then
+		if ydist < 16 and xdist < self.view_range and xdist < min_dist then
 			best_player = v
 		end
 	end
@@ -166,8 +167,7 @@ function Pig:onCollide(o)
 			if o:isCharged() then
 				self.scene:add(Seed(self.x, self.y,
 					o.dir*60,
-					love.math.random(-80, -50),
-					Pig.static.SEED
+					love.math.random(-80, -50)
 				))
 				self:kill()
 			end
