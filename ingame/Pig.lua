@@ -1,5 +1,5 @@
 local Enemy = require("ingame.Enemy")
-local Seed = require("Ingame.Seed")
+local Seed = require("ingame.Seed")
 
 local Pig = class("Pig", Enemy)
 

@@ -29,8 +29,9 @@ function Rat:initialize(x, y, dir)
 	self.slot = nil
 	self.jump_cooldown = 0
 
+	self.animator = Animator(Resources.getAnimator("rat.lua"))
 	self.state = Rat.static.STATE_WALK
-	self.collider = BoxCollider(10, 10)
+	self.collider = BoxCollider(8, 8)
 end
 
 function Rat:enter()
@@ -40,7 +41,7 @@ function Rat:enter()
 end
 
 function Rat:update(dt)
-	-- self.animator:update(dt)
+	self.animator:update(dt)
 	self.time = self.time - dt
 	self.blink = self.blink - dt
 	self.jump_cooldown = self.jump_cooldown - dt
@@ -85,7 +86,7 @@ function Rat:update(dt)
 		self.slot:eat(dt)
 		if self.slot:isEmpty() then
 			self.slot = nil
-			self.state = Rat.static.WALK
+			self.state = Rat.static.STATE_WALK
 		end
 
 	elseif self.state == Rat.static.STATE_STUNNED then
@@ -110,6 +111,8 @@ function Rat:update(dt)
 			end
 		end
 	end
+
+	self.animator:setProperty("state", self.state)
 end
 
 function Rat:charge(x, y)
@@ -156,16 +159,20 @@ function Rat:canSeeSlot()
 end
 
 function Rat:draw()
-	love.graphics.setColor(60, 67, 87)
-	love.graphics.rectangle("fill", self.x-6, self.y-5, 12, 10)
-	love.graphics.setColor(255, 255, 255)
+	self.animator:draw(self.x, self.y, 0, -self.dir, 1)
+	if (self.blink > 0)
+	or (self:isStunned() and love.timer.getTime() % 0.2 < 0.1) then
+		love.graphics.setBlendMode("additive")
+		self.animator:draw(self.x, self.y, 0, -self.dir, 1)
+		love.graphics.setBlendMode("alpha")
+	end
 end
 
 function Rat:onCollide(o)
 	if o:getName() == "slash" and self.blink <= 0 then
 		if self:isStunned() then
 			if o:isCharged() then
-				self.scene:add(Seed(self.x, self.y,
+				self.scene:add(Seed(self.x, self.y-2,
 					o.dir*60,
 					love.math.random(-80, -50),
 					Rat.static.SEED

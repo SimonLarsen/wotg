@@ -47,35 +47,39 @@ function love.run()
 	love.load(arg)
 
 	love.timer.step()
-	local dt = 0
+	local acc = 0
+	local dt = 1/60
 
 	-- Create root canvas
 	local canvas = love.graphics.newCanvas(Screen.WIDTH, Screen.HEIGHT)
 
 	-- Main loop time.
 	while true do
-		-- Process events.
-		love.event.pump()
-		for e,a,b,c,d in love.event.poll() do
-			if e == "quit" then
-				if not love.quit or not love.quit() then
-					if love.audio then
-						love.audio.stop()
-					end
-					return
-				end
-			end
-			love.handlers[e](a,b,c,d)
-		end
-
 		-- Update dt, as we'll be passing it to update
 		love.timer.step()
-		dt = love.timer.getDelta()
+		acc = acc + love.timer.getDelta()
 
 		-- Call update and draw
-		love.update(dt)
+		while acc > dt do
+			-- Process events.
+			love.event.pump()
+			for e,a,b,c,d in love.event.poll() do
+				if e == "quit" then
+					if not love.quit or not love.quit() then
+						if love.audio then
+							love.audio.stop()
+						end
+						return
+					end
+				end
+				love.handlers[e](a,b,c,d)
+			end
 
-		Keyboard.clear()
+			acc = acc - dt
+			love.update(dt)
+
+			Keyboard.clear()
+		end
 
 		if love.window.isCreated() then
 			love.graphics.clear()

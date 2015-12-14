@@ -10,7 +10,7 @@ return {
 	},
 
 	properties = {
-		["state"] = { value = 0 }
+		["state"] = { value = 1 }
 	},
 
 	transitions = {

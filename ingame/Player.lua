@@ -58,10 +58,10 @@ function Player:initialize(x, y, id)
 		self.keys:add("right","right")
 		self.keys:add("down","down")
 		self.keys:add("left","left")
-		self.keys:add("plant", "s")
-		self.keys:add("jump", "d")
+		self.keys:add("plant", "d")
+		self.keys:add("jump", " ")
 		self.keys:add("attack", "f")
-		self.keys:add("toggle", "e")
+		self.keys:add("toggle", "s")
 	end
 end
 
