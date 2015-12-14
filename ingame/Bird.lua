@@ -4,13 +4,15 @@ local Seed = require("ingame.Seed")
 local Bird = class("Bird", Enemy)
 
 Bird.static.STATE_FLY     = 1
-Bird.static.STATE_DASH    = 2
-Bird.static.STATE_SEEK    = 3
-Bird.static.STATE_EAT     = 4
-Bird.static.STATE_STUNNED = 5
+Bird.static.STATE_CHARGE  = 2
+Bird.static.STATE_DASH    = 3
+Bird.static.STATE_SEEK    = 4
+Bird.static.STATE_EAT     = 5
+Bird.static.STATE_STUNNED = 6
 
 Bird.static.GRAVITY = 400
 Bird.static.FLY_SPEED = 30
+Bird.static.CHARGE_TIME = 0.25
 Bird.static.SEEK_SPEED = 50
 Bird.static.DASH_SPEED = 110
 Bird.static.DASH_TIME = 1
@@ -58,8 +60,8 @@ function Bird:update(dt)
 		if self.dir == -1 and self.x < 16 then self.dir = 1 end
 		if self.dir == 1 and self.x > Screen.WIDTH-16 then self.dir = -1 end
 
-		if self.y > Screen.HEIGHT-48 then self.yspeed = -50 end
-		if self.y < 48 then self.yspeed = 50 end
+		if self.y > Screen.HEIGHT-48 then self.yspeed = -30 end
+		if self.y < 48 then self.yspeed = 30 end
 
 		if self.dash_cooldown <= 0 then
 			local player_los, player = self:canSeePlayer()
@@ -71,11 +73,10 @@ function Bird:update(dt)
 				self.target_xspeed = dx / len * Bird.static.DASH_SPEED
 				self.target_yspeed = dy / len * Bird.static.DASH_SPEED
 				self.dir = math.sign(self.target_xspeed)
-				self.state = Bird.static.STATE_DASH
-				self.time = Bird.static.DASH_TIME
-				self.dash_cooldown = Bird.static.DASH_COOLDOWN
+				self.state = Bird.static.STATE_CHARGE
+				self.time = Bird.static.CHARGE_TIME
 			else
-				slot_los, slot = self:canSeeSlot()
+				local slot_los, slot = self:canSeeSlot()
 				if slot_los then
 					self.slot = slot
 					self.state = Bird.static.STATE_SEEK
@@ -83,8 +84,15 @@ function Bird:update(dt)
 			end
 		end
 
-		self.x = self.x + self.xspeed * dt
-		self.y = math.min(self.y + self.yspeed * dt, Screen.HEIGHT-24)
+	elseif self.state == Bird.static.STATE_CHARGE then
+		self.xspeed = math.movetowards(self.xspeed, 0, dt*100)
+		self.yspeed = math.movetowards(self.yspeed, 0, dt*100)
+
+		if self.time <= 0 then
+			self.state = Bird.static.STATE_DASH
+			self.time = Bird.static.DASH_TIME
+			self.dash_cooldown = Bird.static.DASH_COOLDOWN
+		end
 
 	elseif self.state == Bird.static.STATE_DASH then
 		self.xspeed = math.movetowards(self.xspeed, self.target_xspeed, Bird.static.ACCELERATION*dt)
@@ -92,9 +100,6 @@ function Bird:update(dt)
 		if self.time <= 0 then
 			self.state = Bird.static.STATE_FLY
 		end
-
-		self.x = self.x + self.xspeed * dt
-		self.y = math.min(self.y + self.yspeed * dt, Screen.HEIGHT-24)
 
 	elseif self.state == Bird.static.STATE_SEEK then
 		local dx = self.slot.x+self.slot.leaves1_x - self.x
@@ -119,22 +124,33 @@ function Bird:update(dt)
 			self.state = Bird.static.STATE_FLY
 		end
 
-		self.x = self.x + self.xspeed * dt
-		self.y = math.min(self.y + self.yspeed * dt, Screen.HEIGHT-24)
-
 	elseif self.state == Bird.static.STATE_EAT then
+		self.xspeed = 0
+		self.yspeed = 0
+
+		self.slot:eat(dt)
+		if self.slot:isEmpty() then
+			self.slot = nil
+			self.state = Bird.static.STATE_FLY
+		end
 
 	elseif self.state == Bird.static.STATE_STUNNED then
 		self.xspeed = math.movetowards(self.xspeed, 0, 200*dt)
 		self.yspeed = self.yspeed + dt*Bird.static.GRAVITY
 
-		self.x = self.x + self.xspeed * dt
-
 		if self.x < 16 then self.xspeed = 50 end
 		if self.x > Screen.WIDTH-16 then self.xspeed = -50 end
 
-		local oldy = self.y
-		self.y = self.y + self.yspeed * dt
+		if self.time <= 0 then
+			self:kill()
+		end
+	end
+
+	self.x = self.x + self.xspeed * dt
+
+	local oldy = self.y
+	self.y = math.min(self.y + self.yspeed * dt, Screen.HEIGHT-23)
+	if self.state == Bird.static.STATE_STUNNED then
 		local collided, o = self.terrain:checkCollision(self)
 		if collided then
 			if oldy+self.collider.h/2 <= o.y-o.collider.h/2 then
@@ -142,10 +158,6 @@ function Bird:update(dt)
 				self.xspeed = 0.5*self.xspeed
 				self.yspeed = -0.15*self.yspeed
 			end
-		end
-
-		if self.time <= 0 then
-			self:kill()
 		end
 	end
 end

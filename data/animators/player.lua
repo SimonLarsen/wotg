@@ -13,6 +13,7 @@ return {
 
 	properties = {
 		["state"] = { value = 1 },
+		["charge"] = { value = false, isTrigger = true },
 		["attack"] = { value = false, isTrigger = true },
 		["jump"] = { value = false, isTrigger = true }
 	},
@@ -21,10 +22,10 @@ return {
 		{ from = "run", to = "idle", property = "state", value = 1 },
 		{ from = "idle", to = "run", property = "state", value = 2 },
 
-		{ from = "idle", to = "charge", property = "state", value = 3 },
-		{ from = "run", to = "charge", property = "state", value = 3 },
-		{ from = "jump", to = "charge", property = "state", value = 3 },
-		{ from = "fall", to = "charge", property = "state", value = 3 },
+		{ from = "idle", to = "charge", property = "charge", value = true },
+		{ from = "run", to = "charge", property = "charge", value = true },
+		{ from = "jump", to = "charge", property = "charge", value = true },
+		{ from = "fall", to = "charge", property = "charge", value = true },
 		{ from = "charge", to = "attack", property = "attack", value = true },
 		{ from = "attack", to = "idle", property = "_finished", value = true },
 

@@ -36,6 +36,13 @@ function GameController:update(dt)
 	end
 	self.camera:setY(cy)
 
+	if Keyboard.wasPressed("f1") then
+		if love.math.random(1,2) == 1 then
+			self.scene:add(require("ingame.Rat")(-16, Screen.HEIGHT-24, 1))
+		else
+			self.scene:add(require("ingame.Rat")(Screen.WIDTH+16, Screen.HEIGHT-24, -1))
+		end
+	end
 	if Keyboard.wasPressed("f2") then
 		if love.math.random(1,2) == 1 then
 			self.scene:add(require("ingame.Pig")(-16, Screen.HEIGHT-24, 1))
@@ -44,10 +51,11 @@ function GameController:update(dt)
 		end
 	end
 	if Keyboard.wasPressed("f3") then
+		local y = math.random(16, 100)
 		if love.math.random(1,2) == 1 then
-			self.scene:add(require("ingame.Bird")(-16, 100, 1))
+			self.scene:add(require("ingame.Bird")(-16, y, 1))
 		else
-			self.scene:add(require("ingame.Bird")(Screen.WIDTH+16, 100, -1))
+			self.scene:add(require("ingame.Bird")(Screen.WIDTH+16, y, -1))
 		end
 	end
 end

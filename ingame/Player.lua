@@ -95,6 +95,7 @@ function Player:update(dt)
 
 		if Keyboard.wasPressed(self.keys:get("attack"))
 		and self.attack_cooldown <= 0 then
+			self.animator:setProperty("charge", true)
 			self.state = Player.static.STATE_CHARGE
 			self.charge = 0
 		end
@@ -181,9 +182,7 @@ function Player:plant()
 end
 
 function Player:draw()
-	if self.state == Player.static.STATE_CHARGE then
-		self.animator:setProperty("state", 3)
-	elseif self.state == Player.static.STATE_HURT then
+	if self.state == Player.static.STATE_HURT then
 		self.animator:setProperty("state", 4)
 	elseif self.onGround == false then
 		if self.yspeed > 0 then
@@ -223,7 +222,7 @@ function Player:onCollide(o)
 		elseif o:getType() == Fruit.static.TYPE_HEART then
 			self.max_lives = self.max_lives + 0.25
 		elseif o:getType() == Fruit.static.TYPE_UPGRADE then
-			self.power = self.power + 0.1
+			self.power = self.power + 0.05
 		elseif o:getType() == Fruit.static.TYPE_MINION then
 		end
 		o:kill()
@@ -231,11 +230,12 @@ function Player:onCollide(o)
 		self.seeds[o:getType()] = self.seeds[o:getType()] + 1
 		o:kill()
 	elseif self.blink <= 0 then
-		if (o:getName() == "pig" or o:getName() == "bird")
+		if (o:getName() == "pig" or o:getName() == "bird" or o:getName() == "rat")
 		and o:isStunned() == false then
 			self.state = Player.static.STATE_HURT
 			self.time = Player.static.HURT_TIME
 			self.blink = Player.static.BLINK_TIME
+			self.lives = self.lives - 1
 
 			self.xspeed = 120*math.sign(self.x - o.x)
 			self.yspeed = 150*math.sign(self.y - o.y)

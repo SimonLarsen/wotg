@@ -55,7 +55,7 @@ function Pig:update(dt)
 			self.state = Pig.static.STATE_CHARGE
 			self.time = Pig.static.CHARGE_TIME
 		else
-			slot_los, slot = self:canSeeSlot()
+			local slot_los, slot = self:canSeeSlot()
 			if slot_los then
 				local xdist = math.abs(self.x - slot.x)
 				if xdist < 4 then
@@ -86,6 +86,7 @@ function Pig:update(dt)
 
 	elseif self.state == Pig.static.STATE_EAT then
 		self.xspeed = 0
+		self.slot:eat(dt)
 		if self.slot:isEmpty() then
 			self.slot = nil
 			self.state = Pig.static.STATE_WALK
@@ -121,7 +122,7 @@ function Pig:canSeeSlot()
 	for i,v in ipairs(self.slots) do
 		if not v:isEmpty() then
 			local xdist = math.abs(self.x - v.x)
-			if v.y > self.y and v.y < self.y+22 and xdist < min_dist then
+			if v.y > self.y and xdist < min_dist then
 				best_slot = v
 			end
 		end

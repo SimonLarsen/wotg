@@ -7,10 +7,13 @@ local Leaf = require("ingame.Leaf")
 Slot.static.SINGLE_GROW_TIME = 6
 Slot.static.DOUBLE_GROW_TIME = 10
 
+Slot.static.MAX_HP = 4
+
 function Slot:initialize(x, y)
 	Entity.initialize(self, x, y, 1, "slot")
 
 	self.progress = 0
+	self.hp = 0
 	self.swing = 0
 	self.seed1 = Seed.static.TYPE_NONE
 	self.seed2 = Seed.static.TYPE_NONE
@@ -140,6 +143,7 @@ function Slot:addSeed(type)
 		self.seed2 = type
 	end
 
+	self.hp = Slot.static.MAX_HP
 	self.progress = 0
 	self.animator:setProperty("plant", true)
 	self.leaves1_pop = 0.7
@@ -150,6 +154,26 @@ function Slot:addSeed(type)
 	self.fruit = self:getFruit()
 
 	return true
+end
+
+function Slot:eat(dt)
+	self.hp = self.hp - dt
+	if self.hp <= 0 then
+		self:clear()
+	end
+end
+
+function Slot:clear()
+	self.progress = 0
+	self.seed1 = Seed.static.TYPE_NONE
+	self.seed2 = Seed.static.TYPE_NONE
+	self.fruit = Fruit.static.TYPE_NONE
+	self.animator:setProperty("kill", true)
+	self.leaves1:setProperty("kill", true)
+	self.leaves2:setProperty("kill", true)
+
+	self.scene:add(Leaf(self.x+self.leaves1_x, self.y+self.leaves1_y))
+	self.scene:add(Leaf(self.x+self.leaves2_x, self.y+self.leaves2_y))
 end
 
 function Slot:getFruit()
@@ -165,8 +189,6 @@ end
 
 function Slot:onCollide(o)
 	if self:isComplete() and o:getName() == "slash" then
-		self.progress = 0
-		local fruit_type = self:getFruit()
 		self.scene:add(Fruit(
 			self.x+self.leaves1_x,
 			self.y+self.leaves1_y,
@@ -174,15 +196,7 @@ function Slot:onCollide(o)
 			love.math.random(-100, 0),
 			self.fruit
 		))
-		self.seed1 = Seed.static.TYPE_NONE
-		self.seed2 = Seed.static.TYPE_NONE
-		self.fruit = Fruit.static.TYPE_NONE
-		self.animator:setProperty("kill", true)
-		self.leaves1:setProperty("kill", true)
-		self.leaves2:setProperty("kill", true)
-
-		self.scene:add(Leaf(self.x+self.leaves1_x, self.y+self.leaves1_y))
-		self.scene:add(Leaf(self.x+self.leaves2_x, self.y+self.leaves2_y))
+		self:clear()
 	end
 end
 
