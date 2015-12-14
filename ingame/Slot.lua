@@ -12,6 +12,7 @@ Slot.static.MAX_HP = 4
 function Slot:initialize(x, y)
 	Entity.initialize(self, x, y, 1, "slot")
 
+	self.seed_size = 0
 	self.progress = 0
 	self.hp = 0
 	self.swing = 0
@@ -48,6 +49,7 @@ function Slot:update(dt)
 	self.leaves2:update(dt)
 
 	if not self:isEmpty() then
+		self.seed_size = math.min(self.seed_size + dt*6, 1)
 		if self.leaves1_pop > 0 then
 			self.leaves1_pop = self.leaves1_pop - dt
 			if self.leaves1_pop <= 0 then
@@ -77,11 +79,12 @@ end
 function Slot:draw()
 	-- Seeds
 	if not self:isEmpty() then
+		local sc = self.seed_size
 		if self:isFull() then
 			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed1], self.x-2, self.y, 0, 1, 1, 5, 5)
-			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed2], self.x+2, self.y+1, 0, 1, 1, 5, 5)
+			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed2], self.x+2, self.y+1, 0, sc, sc, 5, 5)
 		else
-			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed1], self.x, self.y, 0, 1, 1, 5, 5)
+			love.graphics.draw(self.img_seeds, self.seed_quads[self.seed1], self.x, self.y, 0, sc, sc, 5, 5)
 		end
 	end
 	-- Leaves
@@ -144,6 +147,7 @@ function Slot:addSeed(type)
 	end
 
 	self.hp = Slot.static.MAX_HP
+	self.seed_size = 0
 	self.progress = 0
 	self.animator:setProperty("plant", true)
 	self.leaves1_pop = 0.7

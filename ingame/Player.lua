@@ -19,6 +19,7 @@ Player.static.BASE_DAMAGE = 20
 Player.static.CHARGE_TIME = 0.6
 Player.static.HURT_TIME = 0.25
 Player.static.BLINK_TIME = 2
+Player.static.POWER_INCREMENT = 0.2
 
 Player.static.STATE_IDLE   = 1
 Player.static.STATE_CHARGE = 2
@@ -42,8 +43,8 @@ function Player:initialize(x, y, id)
 	self.max_lives = 6
 	self.lives = self.max_lives
 
-	self.magic = 0
 	self.max_magic = Player.static.MAX_MAGIC
+	self.magic = self.max_magic
 
 	self.xp = 0
 	self.max_xp = 3
@@ -115,10 +116,14 @@ function Player:update(dt)
 		if Keyboard.isDown(self.keys:get("right")) then self.dir = 1 end
 
 		if not Keyboard.isDown(self.keys:get("attack")) then
-			self.state = Player.static.STATE_IDLE
-			local x = self.x + 16*self.dir
 			local charged = self.charge >= Player.static.CHARGE_TIME
-			self.scene:add(Slash(x, self.y, self.xspeed, self.yspeed, self.dir, self:getDamage(), charged))
+			if charged and Keyboard.isDown(self.keys:get("up")) then
+				self:useMagic()
+			else
+				local x = self.x + 16*self.dir
+				self.scene:add(Slash(x, self.y, self.xspeed, self.yspeed, self.dir, self:getDamage(), charged))
+			end
+			self.state = Player.static.STATE_IDLE
 			self.charge = 0
 			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
 			self.animator:setProperty("attack", true)
@@ -210,14 +215,6 @@ function Player:draw()
 		self.animator:draw(self.x, self.y, 0, self.dir, 1)
 		love.graphics.setColor(255, 255, 255)
 	end
-
-	--[[
-	if self.blink > 0 and love.timer.getTime() % 0.2 < 0.1 then
-		love.graphics.setBlendMode("additive")
-		self.animator:draw(self.x, self.y, 0, self.dir, 1)
-		love.graphics.setBlendMode("alpha")
-	end
-	]]
 end
 
 function Player:onCollide(o)
@@ -228,6 +225,9 @@ function Player:onCollide(o)
 			self.magic = math.cap(self.magic+1, 0, self.max_magic)
 		elseif o:getType() == Fruit.static.TYPE_XP then
 			self.xp = math.cap(self.xp+1, 0, self.max_xp)
+			if self.xp == self.max_xp then
+				self:levelUp()
+			end
 		elseif o:getType() == Fruit.static.TYPE_MINION then
 		elseif o:getType() == Fruit.static.TYPE_SHIELD then
 		elseif o:getType() == Fruit.static.TYPE_POWER then
@@ -240,11 +240,11 @@ function Player:onCollide(o)
 	elseif self.blink <= 0 then
 		if o:isInstanceOf(Enemy) and o:isStunned() == false
 		and o:isStunned() == false then
-		--if (o:getName() == "pig" or o:getName() == "bird" or o:getName() == "rat")
-
 			self.state = Player.static.STATE_HURT
 			self.time = Player.static.HURT_TIME
 			self.blink = Player.static.BLINK_TIME
+			self.charge = 0
+			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
 
 			local name = o:getName()
 			if name == "bird" or name == "rat" then
@@ -255,6 +255,25 @@ function Player:onCollide(o)
 
 			self.xspeed = 120*math.sign(self.x - o.x)
 			self.yspeed = 150*math.sign(self.y - o.y)
+		end
+	end
+end
+
+function Player:levelUp()
+	self.xp = 0
+	self.max_xp = self.max_xp + 1
+	self.max_lives = self.max_lives + 1
+	self.lives = self.lives + 1
+	self.power = self.power + Player.static.POWER_INCREMENT
+end
+
+function Player:useMagic()
+	if self.magic < self.max_magic then return end
+	self.magic = 0
+
+	for i,v in ipairs(self.scene:getEntities()) do
+		if v:isInstanceOf(Enemy) then
+			v:kill()
 		end
 	end
 end
