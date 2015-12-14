@@ -3,10 +3,10 @@ local Fruit = class("Fruit", Entity)
 Fruit.static.TYPE_NONE    = 0
 Fruit.static.TYPE_HEAL    = 1
 Fruit.static.TYPE_MAGIC   = 2
-Fruit.static.TYPE_POWER   = 3
+Fruit.static.TYPE_XP      = 3
 Fruit.static.TYPE_MINION  = 4 -- HEAL + MAGIC
-Fruit.static.TYPE_HEART   = 5 -- HEAL + POWER
-Fruit.static.TYPE_UPGRADE = 6 -- MAGIC + POWER
+Fruit.static.TYPE_SHIELD  = 5 -- HEAL + POWER
+Fruit.static.TYPE_POWER   = 6 -- MAGIC + POWER
 
 Fruit.static.GRAVITY = 500
 

@@ -13,7 +13,7 @@ function Slash:initialize(x, y, xspeed, yspeed, dir, damage, charged)
 	self.charged = charged
 
 	self.time = Slash.static.TIME
-	self.collider = BoxCollider(20, 12)
+	self.collider = BoxCollider(20, 18)
 end
 
 function Slash:update(dt)

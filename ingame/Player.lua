@@ -4,6 +4,7 @@ local Keybinding = require("Keybinding")
 local Slash = require("ingame.Slash")
 local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
+local Enemy = require("ingame.Enemy")
 
 Player.static.MOVE_SPEED = 100
 Player.static.ACCELERATION = 1600
@@ -13,8 +14,7 @@ Player.static.MAX_JUMPS = 2
 Player.static.ATTACK_COOLDOWN = 0.15
 Player.static.GRAVITY = 800
 
-Player.static.MAX_HP = 100
-Player.static.MAX_MAGIC = 100
+Player.static.MAX_MAGIC = 4
 Player.static.BASE_DAMAGE = 20
 Player.static.CHARGE_TIME = 0.6
 Player.static.HURT_TIME = 0.25
@@ -39,11 +39,14 @@ function Player:initialize(x, y, id)
 	self.blink = 0
 	self.state = Player.static.STATE_IDLE
 
-	self.max_lives = 3
-	self.lives = self.max_lives-1
+	self.max_lives = 6
+	self.lives = self.max_lives
 
 	self.magic = 0
 	self.max_magic = Player.static.MAX_MAGIC
+
+	self.xp = 0
+	self.max_xp = 3
 
 	self.power = 1
 
@@ -163,6 +166,7 @@ function Player:update(dt)
 	self.hud:setLives(self.id, self.lives, self.max_lives)
 	self.hud:setMagic(self.id, self.magic, self.max_magic)
 	self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
+	self.hud:setXP(self.id, self.xp, self.max_xp)
 end
 
 function Player:plant()
@@ -196,7 +200,9 @@ function Player:draw()
 		end
 	end
 
-	self.animator:draw(self.x, self.y, 0, self.dir, 1)
+	if self.blink < 0 or love.timer.getTime() % 0.04 < 0.02 then
+		self.animator:draw(self.x, self.y, 0, self.dir, 1)
+	end
 
 	if self.charge > Player.static.CHARGE_TIME
 	and love.timer.getTime() % 0.2 < 0.1 then
@@ -205,37 +211,47 @@ function Player:draw()
 		love.graphics.setColor(255, 255, 255)
 	end
 
+	--[[
 	if self.blink > 0 and love.timer.getTime() % 0.2 < 0.1 then
 		love.graphics.setBlendMode("additive")
 		self.animator:draw(self.x, self.y, 0, self.dir, 1)
 		love.graphics.setBlendMode("alpha")
 	end
+	]]
 end
 
 function Player:onCollide(o)
 	if o:getName() == "fruit" then
 		if o:getType() == Fruit.static.TYPE_HEAL then
-			self.lives = math.cap(self.lives+1, 0, math.floor(self.max_lives))
+			self.lives = math.cap(self.lives+2, 0, math.floor(self.max_lives))
 		elseif o:getType() == Fruit.static.TYPE_MAGIC then
-			self.magic = math.cap(self.magic+25, 0, self.max_magic)
-		elseif o:getType() == Fruit.static.TYPE_POWER then
-		elseif o:getType() == Fruit.static.TYPE_HEART then
-			self.max_lives = self.max_lives + 0.25
-		elseif o:getType() == Fruit.static.TYPE_UPGRADE then
-			self.power = self.power + 0.05
+			self.magic = math.cap(self.magic+1, 0, self.max_magic)
+		elseif o:getType() == Fruit.static.TYPE_XP then
+			self.xp = math.cap(self.xp+1, 0, self.max_xp)
 		elseif o:getType() == Fruit.static.TYPE_MINION then
+		elseif o:getType() == Fruit.static.TYPE_SHIELD then
+		elseif o:getType() == Fruit.static.TYPE_POWER then
 		end
+
 		o:kill()
 	elseif o:getName() == "seed" then
 		self.seeds[o:getType()] = self.seeds[o:getType()] + 1
 		o:kill()
 	elseif self.blink <= 0 then
-		if (o:getName() == "pig" or o:getName() == "bird" or o:getName() == "rat")
+		if o:isInstanceOf(Enemy) and o:isStunned() == false
 		and o:isStunned() == false then
+		--if (o:getName() == "pig" or o:getName() == "bird" or o:getName() == "rat")
+
 			self.state = Player.static.STATE_HURT
 			self.time = Player.static.HURT_TIME
 			self.blink = Player.static.BLINK_TIME
-			self.lives = self.lives - 1
+
+			local name = o:getName()
+			if name == "bird" or name == "rat" then
+				self.lives = self.lives - 1
+			elseif name == "pig" then
+				self.lives = self.lives - 2
+			end
 
 			self.xspeed = 120*math.sign(self.x - o.x)
 			self.yspeed = 150*math.sign(self.y - o.y)

@@ -183,8 +183,8 @@ function Slot:getFruit()
 
 	local total = self.seed1 + self.seed2
 	if total == 1+2 then return Fruit.static.TYPE_MINION end
-	if total == 1+3 then return Fruit.static.TYPE_HEART end
-	if total == 2+3 then return Fruit.static.TYPE_UPGRADE end
+	if total == 1+3 then return Fruit.static.TYPE_SHIELD end
+	if total == 2+3 then return Fruit.static.TYPE_POWER end
 end
 
 function Slot:onCollide(o)

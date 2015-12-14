@@ -120,7 +120,7 @@ function Rat:charge(x, y)
 	self.state = Rat.static.STATE_CHARGE
 	self.time = Rat.static.CHARGE_TIME
 
-	self.target_xspeed = (x - self.x)*1.5
+	self.target_xspeed = (x - self.x)*1.4
 	self.target_yspeed = y - self.y - 170
 end
 
