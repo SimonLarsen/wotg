@@ -2,6 +2,7 @@ local GameController = class("GameController", Entity)
 
 local Player = require("ingame.Player")
 local Terrain = require("ingame.Terrain")
+local Background = require("ingame.Background")
 local Slot = require("ingame.Slot")
 local HUD = require("ingame.HUD")
 
@@ -10,6 +11,7 @@ function GameController:initialize()
 end
 
 function GameController:enter()
+	self.scene:add(Background())
 	local terrain = self.scene:add(Terrain())
 	terrain:addBox(2*Screen.WIDTH, 16, Screen.WIDTH/2, Screen.HEIGHT-8)
 	terrain:addBox(64, 16, Screen.WIDTH/2, 88)

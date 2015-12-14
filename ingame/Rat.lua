@@ -176,9 +176,13 @@ function Rat:damage(dmg)
 	end
 	if self.hp <= 0 then
 		self:setStunned()
-		self.state = Rat.static.STATE_STUNNED
-		self.time = Rat.static.STUNNED_TIME
 	end
+end
+
+function Rat:setStunned()
+	Enemy.setStunned(self)
+	self.state = Rat.static.STATE_STUNNED
+	self.time = Rat.static.STUNNED_TIME
 end
 
 function Rat:onCollide(o)

@@ -150,9 +150,13 @@ function Pig:damage(dmg)
 	end
 	if self.hp <= 0 then
 		self:setStunned()
-		self.state = Pig.static.STATE_STUNNED
-		self.time = Pig.static.STUNNED_TIME
 	end
+end
+
+function Pig:setStunned()
+	Enemy.setStunned(self)
+	self.state = Pig.static.STATE_STUNNED
+	self.time = Pig.static.STUNNED_TIME
 end
 
 function Pig:onCollide(o)

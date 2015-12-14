@@ -52,6 +52,7 @@ function Player:initialize(x, y, id)
 	self.power = 1
 	self.seeds = {3, 3, 3}
 	self.selected_seed = 1
+
 	self.shield = 0
 	self.berserk = 0
 
@@ -301,7 +302,7 @@ function Player:useMagic()
 
 	for i,v in ipairs(self.scene:getEntities()) do
 		if v:isInstanceOf(Enemy) then
-			v:kill()
+			v:setStunned()
 		end
 	end
 end

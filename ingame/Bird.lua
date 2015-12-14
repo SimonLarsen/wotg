@@ -219,9 +219,13 @@ function Bird:damage(dmg)
 	end
 	if self.hp <= 0 then
 		self:setStunned()
-		self.state = Bird.static.STATE_STUNNED
-		self.time = Bird.static.STUNNED_TIME
 	end
+end
+
+function Bird:setStunned()
+	Enemy.setStunned(self)
+	self.state = Bird.static.STATE_STUNNED
+	self.time = Bird.static.STUNNED_TIME
 end
 
 function Bird:onCollide(o)
