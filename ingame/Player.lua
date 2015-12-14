@@ -5,6 +5,7 @@ local Slash = require("ingame.Slash")
 local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
 local Enemy = require("ingame.Enemy")
+local LevelUp = require("ingame.LevelUp")
 
 Player.static.MOVE_SPEED = 100
 Player.static.ACCELERATION = 1600
@@ -20,6 +21,8 @@ Player.static.CHARGE_TIME = 0.6
 Player.static.HURT_TIME = 0.25
 Player.static.BLINK_TIME = 2
 Player.static.POWER_INCREMENT = 0.2
+Player.static.SHIELD_TIME = 10
+Player.static.BERSERK_TIME = 20
 
 Player.static.STATE_IDLE   = 1
 Player.static.STATE_CHARGE = 2
@@ -42,19 +45,19 @@ function Player:initialize(x, y, id)
 
 	self.max_lives = 6
 	self.lives = self.max_lives
-
 	self.max_magic = Player.static.MAX_MAGIC
 	self.magic = self.max_magic
-
 	self.xp = 0
 	self.max_xp = 3
-
 	self.power = 1
-
 	self.seeds = {3, 3, 3}
 	self.selected_seed = 1
+	self.shield = 0
+	self.berserk = 0
 
 	self.animator = Animator(Resources.getAnimator("player.lua"))
+	self.img_shield = Resources.getImage("shield.png")
+	self.img_berserk = Resources.getImage("berserk.png")
 
 	self.keys = Keybinding()
 	if self.id == 1 then
@@ -83,6 +86,8 @@ function Player:update(dt)
 	self.yspeed = self.yspeed + dt*Player.static.GRAVITY
 	self.attack_cooldown = self.attack_cooldown - dt
 	self.blink = self.blink - dt
+	self.shield = self.shield - dt
+	self.berserk = self.berserk - dt
 
 	if self.state == Player.static.STATE_IDLE then
 		self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION)
@@ -191,6 +196,26 @@ function Player:plant()
 end
 
 function Player:draw()
+	local t = love.timer.getTime()
+	if self.shield > 0
+	and (self.shield > 3 or t % 0.2 < 0.1) then
+		local r = 230*(math.cos(t*16)/2 + 0.5)
+		love.graphics.setColor(r, 230, 230)
+		love.graphics.draw(self.img_shield, self.x, self.y, 0, 1, 1, 11, 16)
+		love.graphics.setColor(255, 255, 255)
+	end
+
+	if self.berserk > 0
+	and (self.berserk > 3 or t % 0.2 < 0.1) then
+		love.graphics.draw(self.img_berserk, self.x, self.y, 0, 1, 1, 15, 15)
+		local a = 255*(math.cos(t*16)/2 + 0.5)
+		love.graphics.setColor(255, 255, 255, a)
+		love.graphics.setBlendMode("additive")
+		love.graphics.draw(self.img_berserk, self.x, self.y, 0, 1, 1, 15, 15)
+		love.graphics.setBlendMode("alpha")
+		love.graphics.setColor(255, 255, 255, 255)
+	end
+
 	if self.state == Player.static.STATE_HURT then
 		self.animator:setProperty("state", 4)
 	elseif self.onGround == false then
@@ -230,14 +255,16 @@ function Player:onCollide(o)
 			end
 		elseif o:getType() == Fruit.static.TYPE_MINION then
 		elseif o:getType() == Fruit.static.TYPE_SHIELD then
+			self.shield = Player.static.SHIELD_TIME
 		elseif o:getType() == Fruit.static.TYPE_POWER then
+			self.berserk = Player.static.BERSERK_TIME
 		end
 
 		o:kill()
 	elseif o:getName() == "seed" then
 		self.seeds[o:getType()] = self.seeds[o:getType()] + 1
 		o:kill()
-	elseif self.blink <= 0 then
+	elseif self.blink <= 0 and self.shield <= 0 then
 		if o:isInstanceOf(Enemy) and o:isStunned() == false
 		and o:isStunned() == false then
 			self.state = Player.static.STATE_HURT
@@ -265,6 +292,7 @@ function Player:levelUp()
 	self.max_lives = self.max_lives + 1
 	self.lives = self.lives + 1
 	self.power = self.power + Player.static.POWER_INCREMENT
+	self.scene:add(LevelUp())
 end
 
 function Player:useMagic()
@@ -279,7 +307,14 @@ function Player:useMagic()
 end
 
 function Player:getDamage()
-	return self.power * Player.static.BASE_DAMAGE
+	local dmg = self.power * Player.static.BASE_DAMAGE
+	if self.charge >= Player.static.CHARGE_TIME then
+		dmg = dmg * 1.5
+	end
+	if self.berserk > 0 then
+		dmg = dmg * 2
+	end
+	return dmg
 end
 
 return Player
