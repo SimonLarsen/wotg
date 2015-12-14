@@ -211,8 +211,22 @@ function Bird:draw()
 	end
 end
 
+function Bird:damage(dmg)
+	self.blink = 0.15
+	self.hp = self.hp - dmg
+	if self.state == Bird.static.STATE_EAT then
+		self.state = Bird.static.STATE_FLY
+	end
+	if self.hp <= 0 then
+		self:setStunned()
+		self.state = Bird.static.STATE_STUNNED
+		self.time = Bird.static.STUNNED_TIME
+	end
+end
+
 function Bird:onCollide(o)
-	if o:getName() == "slash" and self.blink <= 0 then
+	if self.blink > 0 then return end
+	if o:getName() == "slash" then
 		if self:isStunned() then
 			if o:isCharged() then
 				self.scene:add(Seed(self.x, self.y,
@@ -223,18 +237,11 @@ function Bird:onCollide(o)
 				self:kill()
 			end
 		else
-			self.blink = 0.15
-			self.hp = self.hp - o:getDamage()
+			self:damage(o:getDamage())
 			self.xspeed = 140*o.dir
-			if self.state == Bird.static.STATE_EAT then
-				self.state = Bird.static.STATE_FLY
-			end
-			if self.hp <= 0 then
-				self:setStunned()
-				self.state = Bird.static.STATE_STUNNED
-				self.time = Bird.static.STUNNED_TIME
-			end
 		end
+	elseif o:getName() == "minion" and not self:isStunned() then
+		self:damage(o:getDamage())
 	end
 end
 

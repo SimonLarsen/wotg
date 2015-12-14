@@ -3,6 +3,7 @@ local Slot = class("Slot", Entity)
 local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
 local Leaf = require("ingame.Leaf")
+local Minion = require("ingame.Minion")
 
 Slot.static.SINGLE_GROW_TIME = 6
 Slot.static.DOUBLE_GROW_TIME = 10
@@ -193,13 +194,20 @@ end
 
 function Slot:onCollide(o)
 	if self:isComplete() and o:getName() == "slash" then
-		self.scene:add(Fruit(
-			self.x+self.leaves1_x,
-			self.y+self.leaves1_y,
-			love.math.random(-20, 20),
-			love.math.random(-100, 0),
-			self.fruit
-		))
+		if self.fruit == Fruit.static.TYPE_MINION then
+			self.scene:add(Minion(
+				self.x+self.leaves1_x,
+				self.y+self.leaves1_y
+			))
+		else
+			self.scene:add(Fruit(
+				self.x+self.leaves1_x,
+				self.y+self.leaves1_y,
+				love.math.random(-20, 20),
+				love.math.random(-100, 0),
+				self.fruit
+			))
+		end
 		self:clear()
 	end
 end

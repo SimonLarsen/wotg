@@ -24,7 +24,7 @@ function Rat:initialize(x, y, dir)
 	self.xspeed = 0
 	self.yspeed = 0
 	self.time = 0
-	self.blink= 0
+	self.blink = 0
 	self.hp = Rat.static.MAX_HP
 	self.slot = nil
 	self.jump_cooldown = 0
@@ -134,7 +134,7 @@ function Rat:canSeePlayer()
 
 		if sqdist < 80^2 and xdist > 16
 		and v.y < self.y
-		and (best_player == nil or xdist < min_sqdist) then
+		and (best_player == nil or sqdist < min_sqdist) then
 			min_sqdist = sqdist
 			best_player = v
 		end
@@ -168,8 +168,22 @@ function Rat:draw()
 	end
 end
 
+function Rat:damage(dmg)
+	self.blink = 0.15
+	self.hp = self.hp - dmg
+	if self.state == Rat.static.STATE_EAT then
+		self.state = Rat.static.STATE_WALK
+	end
+	if self.hp <= 0 then
+		self:setStunned()
+		self.state = Rat.static.STATE_STUNNED
+		self.time = Rat.static.STUNNED_TIME
+	end
+end
+
 function Rat:onCollide(o)
-	if o:getName() == "slash" and self.blink <= 0 then
+	if self.blink > 0 then return end
+	if o:getName() == "slash" then
 		if self:isStunned() then
 			if o:isCharged() then
 				self.scene:add(Seed(self.x, self.y-2,
@@ -180,18 +194,11 @@ function Rat:onCollide(o)
 				self:kill()
 			end
 		else
-			self.blink = 0.15
-			self.hp = self.hp - o:getDamage()
+			self:damage(o:getDamage())
 			self.xspeed = 100*o.dir
-			if self.state == Rat.static.STATE_EAT then
-				self.state = Rat.static.STATE_WALK
-			end
-			if self.hp <= 0 then
-				self:setStunned()
-				self.state = Rat.static.STATE_STUNNED
-				self.time = Rat.static.STUNNED_TIME
-			end
 		end
+	elseif o:getName() == "minion" and not self:isStunned() then
+		self:damage(o:getDamage())
 	end
 end
 
