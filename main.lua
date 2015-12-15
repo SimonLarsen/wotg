@@ -22,11 +22,12 @@ function love.load()
 
 	Resources.initialize()
 
+	local w, h = love.window.getDesktopDimensions()
+	Screen.SCALE = math.floor(h / Screen.HEIGHT)
 	love.window.setMode(Screen.WIDTH*Screen.SCALE, Screen.HEIGHT*Screen.SCALE)
 
 	gamestate.registerEvents()
-	--gamestate.switch(require("title.TitleScene")())
-	gamestate.switch(require("ingame.IngameScene")())
+	gamestate.switch(require("title.TitleScene")())
 end
 
 function love.gui()
@@ -53,6 +54,12 @@ function love.run()
 	local acc = 0
 	local dt = 1/60
 
+	local canvas_x = 0
+	local canvas_y = 0
+	local canvas_scale = 1
+
+	local scale_keys = {"f1","f2","f3","f4","f5","f6"}
+
 	-- Create root canvas
 	local canvas = love.graphics.newCanvas(Screen.WIDTH, Screen.HEIGHT)
 
@@ -78,6 +85,34 @@ function love.run()
 				love.handlers[e](a,b,c,d)
 			end
 
+			-- change screen size
+			for i,v in ipairs(scale_keys) do
+				if Keyboard.wasPressed(v) then
+					Screen.SCALE = i
+					if not Screen.FULLSCREEN then
+						love.window.setMode(Screen.WIDTH*Screen.SCALE, Screen.HEIGHT*Screen.SCALE, {fullscreen = false})
+					end
+				end
+			end
+
+			-- toggle fullscreen
+			if Keyboard.wasPressed("f11")
+			or ((Keyboard.isDown("lalt") or Keyboard.isDown("ralt")) and Keyboard.wasPressed("return", true)) then
+				Screen.FULLSCREEN = not Screen.FULLSCREEN
+				if Screen.FULLSCREEN then
+					local w, h = love.window.getDesktopDimensions()
+					love.window.setMode(w, h, {fullscreen = true})
+
+					canvas_scale = h/Screen.HEIGHT
+					canvas_x = math.floor((w - Screen.WIDTH*canvas_scale)/2)
+					canvas_y = 0
+				else
+					love.window.setMode(Screen.WIDTH*Screen.SCALE, Screen.HEIGHT*Screen.SCALE, {fullscreen = false})
+					canvas_scale = 1
+					canvas_x, canvas_y = 0, 0
+				end
+			end
+
 			acc = acc - dt
 			love.update(dt)
 
@@ -94,9 +129,11 @@ function love.run()
 			love.draw()
 			love.gui()
 
-			love.graphics.scale(Screen.SCALE, Screen.SCALE)
+			if not Screen.FULLSCREEN then
+				love.graphics.scale(Screen.SCALE, Screen.SCALE)
+			end
 			love.graphics.setCanvas()
-			love.graphics.draw(canvas, 0, 0)
+			love.graphics.draw(canvas, canvas_x, canvas_y, 0, canvas_scale, canvas_scale)
 
 			love.graphics.present()
 		end

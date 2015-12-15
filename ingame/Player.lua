@@ -8,6 +8,7 @@ local Fruit = require("ingame.Fruit")
 local Enemy = require("ingame.Enemy")
 local LevelUp = require("ingame.LevelUp")
 local ScreenShaker = require("ingame.ScreenShaker")
+local Fade = require("transition.Fade")
 
 Player.static.MOVE_SPEED = 100
 Player.static.ACCELERATION = 1600
@@ -17,14 +18,14 @@ Player.static.MAX_JUMPS = 2
 Player.static.ATTACK_COOLDOWN = 0.15
 Player.static.GRAVITY = 800
 
-Player.static.MAX_MAGIC = 4
+Player.static.MAX_MAGIC = 3
 Player.static.BASE_DAMAGE = 20
 Player.static.CHARGE_TIME = 0.4
 Player.static.HURT_TIME = 0.25
 Player.static.BLINK_TIME = 2
 Player.static.POWER_INCREMENT = 0.2
-Player.static.SHIELD_TIME = 10
-Player.static.BERSERK_TIME = 10
+Player.static.SHIELD_TIME = 15
+Player.static.BERSERK_TIME = 15
 
 Player.static.STATE_IDLE   = 1
 Player.static.STATE_CHARGE = 2
@@ -122,23 +123,37 @@ function Player:update(dt)
 	
 	elseif self.state == Player.static.STATE_CHARGE then
 		if self.onGround then
-			self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION/3)
+			self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION/2)
 		end
+
 		self.charge = self.charge + dt
+		local charged = self.charge >= Player.static.CHARGE_TIME
+
+		if self.charge >= Player.static.CHARGE_TIME
+		and self.charge-dt < Player.static.CHARGE_TIME then
+			Resources.playSound("charged.wav")
+		end
 
 		if Keyboard.isDown(self.keys:get("left")) then self.dir = -1 end
 		if Keyboard.isDown(self.keys:get("right")) then self.dir = 1 end
 
+		if charged and Keyboard.wasPressed(self.keys:get("up")) then
+			self:useMagic()
+			self.state = Player.static.STATE_IDLE
+			self.charge = 0
+			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
+			self.animator:setProperty("attack", true)
+		end
 		if not Keyboard.isDown(self.keys:get("attack")) then
-			local charged = self.charge >= Player.static.CHARGE_TIME
-			if charged and Keyboard.isDown(self.keys:get("up")) then
-				self:useMagic()
+			local x = self.x + 16*self.dir
+			self.scene:add(Slash(self, self.dir, self:getDamage(), charged))
+			if charged then
+				Resources.playSound("charged_slash.wav")
 			else
-				local x = self.x + 16*self.dir
-				self.scene:add(Slash(self, self.dir, self:getDamage(), charged))
-				if self.berserk > 0 then
-					self.scene:add(Beam(x, self.y, self.dir, self:getDamage()))
-				end
+				Resources.playSound("slash.wav")
+			end
+			if self.berserk > 0 then
+				self.scene:add(Beam(x, self.y, self.dir, self:getDamage(), charged))
 			end
 			self.state = Player.static.STATE_IDLE
 			self.charge = 0
@@ -159,6 +174,7 @@ function Player:update(dt)
 	if Keyboard.wasPressed(self.keys:get("jump"))
 	and self.jumps < Player.static.MAX_JUMPS
 	and self.state ~= Player.static.STATE_DEAD then
+		Resources.playSound("jump.wav")
 		self.onGround = false
 		self.yspeed = math.min(self.yspeed, -Player.static.JUMP_SPEED)
 		self.jumps = self.jumps+1
@@ -168,6 +184,7 @@ function Player:update(dt)
 	if Keyboard.wasPressed(self.keys:get("toggle")) then
 		self.selected_seed = self.selected_seed % 3 + 1
 		self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
+		Resources.playSound("seedselect.wav")
 	end
 
 	self.x = math.cap(self.x + self.xspeed*dt, 8, Screen.WIDTH-8)
@@ -214,7 +231,6 @@ end
 function Player:plant()
 	if self.onGround == false then return end
 	if self.seeds[self.selected_seed] == 0 then return end
-	addScore(25)
 
 	local slots = self.scene:findAll("slot")
 	for i,v in ipairs(slots) do
@@ -222,7 +238,9 @@ function Player:plant()
 		and v.y > self.y and v.y < self.y+22
 		and not v:isFull() then
 			if v:addSeed(self.selected_seed) then
-				self.seeds[self.selected_seed] = self.seeds[self.selected_seed]-1
+				self.seeds[self.selected_seed] = self.seeds[self.selected_seed] - 1
+				addScore(25)
+				Resources.playSound("plant.wav")
 			end
 		end
 	end
@@ -282,9 +300,11 @@ function Player:onCollide(o)
 			self.berserk = Player.static.BERSERK_TIME
 		end
 
+		Resources.playSound("pickup_fruit.wav")
 		o:kill()
 	elseif o:getName() == "seed" then
-		self.seeds[o:getType()] = self.seeds[o:getType()] + 1
+		self.seeds[o:getType()] = math.min(self.seeds[o:getType()] + 1, 9)
+		Resources.playSound("pickup_seed.wav")
 		o:kill()
 		addScore(200)
 	elseif self.blink <= 0 and self.shield <= 0 then
@@ -299,13 +319,17 @@ function Player:onCollide(o)
 			local name = o:getName()
 			if name == "bird" or name == "rat" or name == "pig" then
 				self.lives = self.lives - 1
-			elseif name == "boar" then
+			elseif name == "boar" or name == "darkbird" then
 				self.lives = self.lives - 2
 			end
+
 			if self.lives <= 0 then
 				self.state = Player.static.STATE_DEAD
 				self.blink = 0
 				self.scene:find("controller"):gameOver()
+				Resources.playSound("death.wav")
+			else
+				Resources.playSound("hurt.wav")
 			end
 
 			self.xspeed = 120*math.sign(self.x - o.x)
@@ -322,6 +346,7 @@ function Player:levelUp()
 	self.lives = self.lives + 1
 	self.power = self.power + Player.static.POWER_INCREMENT
 	self.scene:add(LevelUp())
+	Resources.playSound("levelup.wav")
 end
 
 function Player:useMagic()
@@ -329,6 +354,8 @@ function Player:useMagic()
 	self.magic = 0
 	self.scene:add(ScreenShaker(1.5, 1.5))
 
+	self.scene:add(Fade(2, Fade.static.IN, {152, 37, 156}, 100))
+	Resources.playSound("super.wav")
 	for i,v in ipairs(self.scene:getEntities()) do
 		if v:isInstanceOf(Enemy) then
 			v:setStunned()
@@ -342,7 +369,7 @@ function Player:getDamage()
 		dmg = dmg * 1.5
 	end
 	if self.berserk > 0 then
-		dmg = dmg * 1.5
+		dmg = dmg * 1.25
 	end
 	return dmg
 end

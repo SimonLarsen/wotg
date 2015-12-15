@@ -11,29 +11,15 @@ local GameOver = require("ingame.GameOver")
 local Fade = require("transition.Fade")
 
 local Bird = require("ingame.Bird")
+local DarkBird = require("ingame.DarkBird")
 local Rat = require("ingame.Rat")
 local Pig = require("ingame.Pig")
 local Boar = require("ingame.Boar")
 local Bats = require("ingame.Bats")
 
-local WAVES = {
-	{ "pig" },
-	{ "bird" },
-	{ "rat", "bird" },
-	{ "pig" },
-	{ "bird", "bird" },
-	{ "pig", "bird" },
-	{ "pig", "pig", },
-	{ "rat", "rat", },
-	{ "bird", "bird", "pig" },
-	{ "pig", "bird" },
-	{ "pig", "pig", "bird" },
-	{ "rat", "rat" },
-	{ "rat", "rat", "bird", "bird" },
-	{ "pig", "pig", "pig" },
-}
+local enemies = { "rat", "bird", "pig", "darkbird", "boar" }
 
-GameController.static.WAVE_DELAY = 10
+GameController.static.WAVE_DELAY = 12
 GameController.static.SPAWN_DELAY = 1
 
 function GameController:initialize()
@@ -43,6 +29,8 @@ function GameController:initialize()
 	self.next_spawn = 0
 	self.wave = 0
 	self.spawned = 0
+
+	self.wave_enemies = { "pig" }
 end
 
 function GameController:enter()
@@ -77,16 +65,14 @@ function GameController:update(dt)
 	self.next_spawn = self.next_spawn - dt
 
 	if self.wave > 0 and self.next_spawn <= 0
-	and self.spawned < #WAVES[self.wave] then
+	and self.spawned < #self.wave_enemies then
 		self.spawned = self.spawned + 1
 		self.next_spawn = GameController.static.SPAWN_DELAY
-		self:spawn(WAVES[self.wave][self.spawned])
+		self:spawn(self.wave_enemies[self.spawned])
 	end
 
 	if self.next_wave <= 0 and self:waveClear() then
-		self.wave = self.wave + 1
-		self.next_wave = GameController.static.WAVE_DELAY
-		self.spawned = 0
+		self:advanceWave()
 	end
 
 	local cx = Screen.WIDTH/2
@@ -104,6 +90,29 @@ function GameController:update(dt)
 	self.camera:setPosition(cx, cy)
 end
 
+function GameController:advanceWave()
+	self.wave = self.wave + 1
+	self.next_wave = GameController.static.WAVE_DELAY
+	self.spawned = 0
+
+	local avail = math.min(math.floor(3 + self.wave/7), #enemies)
+	local min_count = 1
+	if self.wave > 2 then
+		min_count = math.max(2, math.floor(self.wave / 4.5))
+	end
+	local max_count = math.max(1, math.ceil(self.wave / 3.5))
+
+	self.wave_enemies = {}
+	local count = min_count
+	if max_count > min_count then
+		count = love.math.random(min_count, max_count)
+	end
+	for i=1, count do
+		local type = love.math.random(1, avail)
+		table.insert(self.wave_enemies, enemies[type])
+	end
+end
+
 function GameController:spawn(type)
 	if type == "rat" then
 		if love.math.random(1,2) == 1 then
@@ -117,6 +126,13 @@ function GameController:spawn(type)
 			self.scene:add(Bird(-16, y, 1))
 		else
 			self.scene:add(Bird(Screen.WIDTH+16, y, -1))
+		end
+	elseif type == "darkbird" then
+		local y = math.random(16, 100)
+		if love.math.random(1,2) == 1 then
+			self.scene:add(DarkBird(-16, y, 1))
+		else
+			self.scene:add(DarkBird(Screen.WIDTH+16, y, -1))
 		end
 	elseif type == "bats" then
 		local y = math.random(16, 100)
@@ -141,12 +157,12 @@ function GameController:spawn(type)
 end
 
 function GameController:waveClear()
-	if self.wave > 0 and self.spawned < #WAVES[self.wave] then
+	if self.wave > 0 and self.spawned < #self.wave_enemies then
 		return false
 	end
 
 	for i,v in ipairs(self.scene:getEntities()) do
-		if v:isInstanceOf(Enemy) and v:isStunned() == false then
+		if v:isInstanceOf(Enemy) then
 			return false
 		end
 	end

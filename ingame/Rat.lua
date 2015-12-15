@@ -92,6 +92,8 @@ function Rat:update(dt)
 
 	elseif self.state == Rat.static.STATE_STUNNED then
 		self.xspeed = math.movetowards(self.xspeed, 0, 200*dt)
+		if self.x < 16 then self.xspeed = 50 end
+		if self.x > Screen.WIDTH-16 then self.xspeed = -50 end
 		if self.time <= 0 then
 			self:kill()
 		end
@@ -178,6 +180,7 @@ function Rat:damage(dmg)
 	if self.hp <= 0 then
 		self:setStunned()
 	end
+	Resources.playSound("hurt2.wav")
 end
 
 function Rat:setStunned()

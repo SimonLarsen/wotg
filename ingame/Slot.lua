@@ -4,6 +4,7 @@ local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
 local Leaf = require("ingame.Leaf")
 local Minion = require("ingame.Minion")
+local Attack = require("ingame.Attack")
 
 Slot.static.SINGLE_GROW_TIME = 6
 Slot.static.DOUBLE_GROW_TIME = 6
@@ -72,6 +73,9 @@ function Slot:update(dt)
 			end
 		end
 		if self:isComplete() then
+			if self.swing == 0.6 then
+				Resources.playSound("fruit_ripe.wav")
+			end
 			self.swing = math.max(self.swing - dt, 0)
 		end
 	end
@@ -197,7 +201,7 @@ function Slot:getFruit()
 end
 
 function Slot:onCollide(o)
-	if self:isComplete() and o:getName() == "slash" then
+	if self:isComplete() and o:isInstanceOf(Attack) then
 		if self.fruit == Fruit.static.TYPE_MINION then
 			self.scene:add(Minion(
 				self.x+self.leaves1_x,

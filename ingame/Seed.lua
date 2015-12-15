@@ -15,8 +15,8 @@ function Seed:initialize(x, y, xspeed, yspeed, type)
 
 	if self.type == nil then
 		local r = love.math.random()
-		if r < 0.3 then self.type = Seed.static.TYPE_HEAL
-		elseif r < 0.5 then self.type = Seed.static.TYPE_MAGIC
+		if r < 0.2 then self.type = Seed.static.TYPE_HEAL
+		elseif r < 0.4 then self.type = Seed.static.TYPE_MAGIC
 		else self.type = Seed.static.TYPE_POWER
 		end
 	end
@@ -39,9 +39,9 @@ function Seed:update(dt)
 
 	self.yspeed = self.yspeed + dt*Seed.static.GRAVITY
 	if self.x < 8 then
-		self.xspeed = 8
+		self.xspeed = 50
 	elseif self.x > Screen.WIDTH-8 then
-		self.xspeed = -8
+		self.xspeed = -50
 	end
 	
 	self.x = self.x + self.xspeed*dt

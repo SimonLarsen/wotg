@@ -37,6 +37,8 @@ function Bird:initialize(x, y, dir)
 	self.hp = Bird.static.MAX_HP
 	self.slot = nil
 	self.dash_cooldown = 0
+	self.dash_speed = Bird.static.DASH_SPEED
+	self.player_range = 80
 
 	self.animator = Animator(Resources.getAnimator("bird.lua"))
 	self.collider = BoxCollider(12, 12)
@@ -71,8 +73,8 @@ function Bird:update(dt)
 				local dy = player.y - self.y
 				local len = math.sqrt(dx^2 + dy^2)
 
-				self.target_xspeed = dx / len * Bird.static.DASH_SPEED
-				self.target_yspeed = dy / len * Bird.static.DASH_SPEED
+				self.target_xspeed = dx / len * self.dash_speed
+				self.target_yspeed = dy / len * self.dash_speed
 				self.dir = math.sign(self.target_xspeed)
 				self.state = Bird.static.STATE_CHARGE
 				self.time = Bird.static.CHARGE_TIME
@@ -171,7 +173,7 @@ function Bird:canSeePlayer()
 		local ydist = math.abs(self.y - v.y)
 		local sqdist = xdist^2 + ydist^2
 
-		if sqdist < 80^2 and xdist > 16
+		if sqdist < self.player_range^2 and xdist > 16
 		and (best_player == nil or sqdist < min_sqdist) then
 			min_sqdist = sqdist
 			best_player = v
@@ -221,6 +223,7 @@ function Bird:damage(dmg)
 	if self.hp <= 0 then
 		self:setStunned()
 	end
+	Resources.playSound("hurt2.wav")
 end
 
 function Bird:setStunned()

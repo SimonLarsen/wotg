@@ -1,12 +1,12 @@
 function love.conf(t)
-    t.identity = "ld34"
+    t.identity = "dk.tangramgames.wotg"
     t.version = "0.9.2"
-    t.console = true
+    t.console = false
  
-    t.window.title = "Ludum Dare 34"
+    t.window.title = "Witch of the Grove"
     t.window.icon = nil
-    t.window.width = 240
-    t.window.height = 160
+    t.window.width = 240*4
+    t.window.height = 160*4
     t.window.borderless = false
     t.window.resizable = false
     t.window.minwidth = 1

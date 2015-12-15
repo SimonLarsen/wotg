@@ -20,7 +20,9 @@ function GameoverController:initialize()
 	local data = Serial.pack({ score = self.highscore })
 	love.filesystem.write("highscore", data)
 
-	self.text = "YOU SCORED\n" .. Score.score .. "\n\nAT LEVEL\n" .. Score.level .. "\n\nYOUR HIGHSCORE\n" .. self.highscore
+	self.text = "YOU SCORED\n" .. Score.score
+	self.text = self.text .. "\n\nAT LEVEL\n" .. Score.level
+	self.text = self.text .. "\n\nYOUR HIGHSCORE\n" .. self.highscore
 end
 
 function GameoverController:enter()
@@ -31,6 +33,7 @@ function GameoverController:update(dt)
 	if Keyboard.wasPressed("return")
 	or Keyboard.wasPressed(" ")
 	then
+		Resources.playSound("wobble.wav")
 		self.scene:add(Fade(1, Fade.static.OUT))
 		timer.after(1, function()
 			gamestate.switch(require("ingame.IngameScene")())
@@ -42,7 +45,11 @@ function GameoverController:gui()
 	love.graphics.draw(self.bg, 0, 0)
 
 	love.graphics.setFont(self.small_font)
-	love.graphics.printf(self.text, 0, 60, Screen.WIDTH, "center")
+	love.graphics.printf(self.text, 0, 54, Screen.WIDTH, "center")
+
+	if love.timer.getTime() % 1 < 0.7 then
+		love.graphics.printf("PUSH SPACE TO PLAY AGAIN", 0, Screen.HEIGHT-26, Screen.WIDTH, "center")
+	end
 end
 
 return GameoverController

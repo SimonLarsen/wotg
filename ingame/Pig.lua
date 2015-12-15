@@ -153,6 +153,7 @@ function Pig:damage(dmg)
 	if self.hp <= 0 then
 		self:setStunned()
 	end
+	Resources.playSound("hurt2.wav")
 end
 
 function Pig:setStunned()

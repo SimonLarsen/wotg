@@ -13,7 +13,7 @@ Bats.static.STATE_DEAD   = 5
 Bats.static.GRAVITY = 400
 Bats.static.FLY_SPEED = 30
 Bats.static.SEEK_SPEED = 40
-Bats.static.ATTACK_SPEED = 60
+Bats.static.ATTACK_SPEED = 40
 Bats.static.DASH_COOLDOWN = 3
 Bats.static.ACCELERATION = 500
 
@@ -173,6 +173,7 @@ function Bats:damage(dmg)
 	if self.hp <= 0 then
 		self.state = Bats.static.STATE_DEAD
 	end
+	Resources.playSound("hurt2.wav")
 end
 
 function Bats:setStunned()

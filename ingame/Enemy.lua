@@ -1,6 +1,6 @@
 local Enemy = class("Enemy", Entity)
 
-Enemy.static.BLINK_TIME = 0.25
+Enemy.static.BLINK_TIME = 0.35
 
 function Enemy:initialize(...)
 	Entity.initialize(self, ...)
