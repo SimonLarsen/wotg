@@ -2,6 +2,7 @@ local Player = class("Player", Entity)
 
 local Keybinding = require("Keybinding")
 local Slash = require("ingame.Slash")
+local Beam = require("ingame.Beam")
 local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
 local Enemy = require("ingame.Enemy")
@@ -48,8 +49,7 @@ function Player:initialize(x, y, id)
 	self.level = 1
 
 	self.max_lives = 6
-	--self.lives = self.max_lives
-	self.lives = 1
+	self.lives = self.max_lives
 	self.max_magic = Player.static.MAX_MAGIC
 	self.magic = self.max_magic
 	self.xp = 0
@@ -121,7 +121,9 @@ function Player:update(dt)
 		end
 	
 	elseif self.state == Player.static.STATE_CHARGE then
-		self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION/4)
+		if self.onGround then
+			self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION/3)
+		end
 		self.charge = self.charge + dt
 
 		if Keyboard.isDown(self.keys:get("left")) then self.dir = -1 end
@@ -134,6 +136,9 @@ function Player:update(dt)
 			else
 				local x = self.x + 16*self.dir
 				self.scene:add(Slash(self, self.dir, self:getDamage(), charged))
+				if self.berserk > 0 then
+					self.scene:add(Beam(x, self.y, self.dir, self:getDamage()))
+				end
 			end
 			self.state = Player.static.STATE_IDLE
 			self.charge = 0

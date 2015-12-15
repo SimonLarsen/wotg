@@ -1,5 +1,6 @@
 local Enemy = require("ingame.Enemy")
 local Seed = require("ingame.Seed")
+local Attack = require("ingame.Attack")
 
 local Bats = class("Bats", Enemy)
 
@@ -183,7 +184,7 @@ function Bats:onCollide(o)
 	if self.state == Bats.static.STATE_DEAD then return end
 
 	if self.blink > 0 then return end
-	if o:getName() == "slash" then
+	if o:isInstanceOf(Attack) then
 		self:damage(o:getDamage())
 		self.xspeed = 140*o.dir
 	elseif o:getName() == "minion" then

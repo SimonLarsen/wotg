@@ -1,5 +1,6 @@
 local Enemy = require("ingame.Enemy")
 local Seed = require("ingame.Seed")
+local Attack = require("ingame.Attack")
 
 local Bird = class("Bird", Enemy)
 
@@ -230,7 +231,7 @@ end
 
 function Bird:onCollide(o)
 	if self.blink > 0 then return end
-	if o:getName() == "slash" then
+	if o:isInstanceOf(Attack) then
 		if self:isStunned() then
 			if o:isCharged() then
 				self.scene:add(Seed(self.x, self.y,

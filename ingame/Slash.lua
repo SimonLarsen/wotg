@@ -1,4 +1,6 @@
-local Slash = class("Slash", Entity)
+local Attack = require("ingame.Attack")
+
+local Slash = class("Slash", Attack)
 
 Slash.static.TIME = 0.2
 Slash.static.COLLISION_TIME = 0.1
