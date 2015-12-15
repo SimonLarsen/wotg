@@ -12,7 +12,15 @@ function Seed:initialize(x, y, xspeed, yspeed, type)
 
 	self.xspeed = xspeed or 0
 	self.yspeed = yspeed or 0
-	self.type = type or love.math.random(1, 3)
+
+	if self.type == nil then
+		local r = love.math.random()
+		if r < 0.3 then self.type = Seed.static.TYPE_HEAL
+		elseif r < 0.5 then self.type = Seed.static.TYPE_MAGIC
+		else self.type = Seed.static.TYPE_POWER
+		end
+	end
+
 	self.time = 0
 
 	self.image = Resources.getImage("seeds.png")

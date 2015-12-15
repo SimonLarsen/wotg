@@ -168,6 +168,10 @@ function Slot:eat(dt)
 	end
 end
 
+function Slot:eatFruit()
+	self.progress = 0
+end
+
 function Slot:clear()
 	self.progress = 0
 	self.seed1 = Seed.static.TYPE_NONE

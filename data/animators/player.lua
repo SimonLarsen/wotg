@@ -8,14 +8,16 @@ return {
 		["attack"] = { image = "player_attack.png", fw = 36, fh = 32, ox = 11, oy = 20, delay = 0.05 },
 		["hurt"] = { image = "player_hurt.png", fw = 18, fh = 32, oy = 20, delay = 0.25 },
 		["jump"] = { image = "player_jump.png", fw = 18, fh = 32, oy = 20, delay = 0.10, loop = false },
-		["fall"] = { image = "player_fall.png", fw = 18, fh = 32, oy = 20, delay = 0.1 }
+		["fall"] = { image = "player_fall.png", fw = 18, fh = 32, oy = 20, delay = 0.1 },
+		["dead"] = { image = "player_death.png", fw = 29, fh = 32, ox = 14, oy = 20, delay = 0.1, loop = false } 
 	},
 
 	properties = {
 		["state"] = { value = 1 },
 		["charge"] = { value = false, isTrigger = true },
 		["attack"] = { value = false, isTrigger = true },
-		["jump"] = { value = false, isTrigger = true }
+		["jump"] = { value = false, isTrigger = true },
+		["dead"] = { value = false, isTrigger = true }
 	},
 
 	transitions = {
@@ -39,6 +41,8 @@ return {
 		{ from = "idle", to = "fall", property = "state", value = 5 },
 		{ from = "run", to = "fall", property = "state", value = 5 },
 		{ from = "fall", to = "idle", property = "state", value = 1 },
-		{ from = "fall", to = "run", property = "state", value = 2 }
+		{ from = "fall", to = "run", property = "state", value = 2 },
+
+		{ from = "any", to = "dead", property = "state", value = 6 }
 	}
 }

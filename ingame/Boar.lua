@@ -22,4 +22,8 @@ function Boar:initialize(x, y, dir)
 	self.collider = BoxCollider(18, 14)
 end
 
+function Boar:getScore()
+	return 400
+end
+
 return Boar

@@ -212,7 +212,7 @@ function Bird:draw()
 end
 
 function Bird:damage(dmg)
-	self.blink = 0.15
+	self.blink = Enemy.static.BLINK_TIME
 	self.hp = self.hp - dmg
 	if self.state == Bird.static.STATE_EAT then
 		self.state = Bird.static.STATE_FLY
@@ -246,6 +246,10 @@ function Bird:onCollide(o)
 	elseif o:getName() == "minion" and not self:isStunned() then
 		self:damage(o:getDamage())
 	end
+end
+
+function Bird:getScore()
+	return 100
 end
 
 return Bird

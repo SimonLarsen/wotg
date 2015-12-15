@@ -169,7 +169,7 @@ function Rat:draw()
 end
 
 function Rat:damage(dmg)
-	self.blink = 0.15
+	self.blink = Enemy.static.BLINK_TIME
 	self.hp = self.hp - dmg
 	if self.state == Rat.static.STATE_EAT then
 		self.state = Rat.static.STATE_WALK
@@ -203,6 +203,10 @@ function Rat:onCollide(o)
 	elseif o:getName() == "minion" and not self:isStunned() then
 		self:damage(o:getDamage())
 	end
+end
+
+function Rat:getScore()
+	return 50
 end
 
 return Rat

@@ -6,6 +6,7 @@ local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
 local Enemy = require("ingame.Enemy")
 local LevelUp = require("ingame.LevelUp")
+local ScreenShaker = require("ingame.ScreenShaker")
 
 Player.static.MOVE_SPEED = 100
 Player.static.ACCELERATION = 1600
@@ -17,16 +18,17 @@ Player.static.GRAVITY = 800
 
 Player.static.MAX_MAGIC = 4
 Player.static.BASE_DAMAGE = 20
-Player.static.CHARGE_TIME = 0.6
+Player.static.CHARGE_TIME = 0.4
 Player.static.HURT_TIME = 0.25
 Player.static.BLINK_TIME = 2
 Player.static.POWER_INCREMENT = 0.2
 Player.static.SHIELD_TIME = 10
-Player.static.BERSERK_TIME = 20
+Player.static.BERSERK_TIME = 10
 
 Player.static.STATE_IDLE   = 1
 Player.static.STATE_CHARGE = 2
 Player.static.STATE_HURT   = 3
+Player.static.STATE_DEAD   = 4
 
 function Player:initialize(x, y, id)
 	Entity.initialize(self, x, y, -1, "player")
@@ -43,8 +45,11 @@ function Player:initialize(x, y, id)
 	self.blink = 0
 	self.state = Player.static.STATE_IDLE
 
+	self.level = 1
+
 	self.max_lives = 6
-	self.lives = self.max_lives
+	--self.lives = self.max_lives
+	self.lives = 1
 	self.max_magic = Player.static.MAX_MAGIC
 	self.magic = self.max_magic
 	self.xp = 0
@@ -128,7 +133,7 @@ function Player:update(dt)
 				self:useMagic()
 			else
 				local x = self.x + 16*self.dir
-				self.scene:add(Slash(x, self.y, self.xspeed, self.yspeed, self.dir, self:getDamage(), charged))
+				self.scene:add(Slash(self, self.dir, self:getDamage(), charged))
 			end
 			self.state = Player.static.STATE_IDLE
 			self.charge = 0
@@ -142,10 +147,13 @@ function Player:update(dt)
 		if self.time <= 0 then
 			self.state = Player.static.STATE_IDLE
 		end
+	elseif self.state == Player.static.STATE_DEAD then
+		self.xspeed = math.movetowards(self.xspeed, 0, dt*200)
 	end
 
 	if Keyboard.wasPressed(self.keys:get("jump"))
-	and self.jumps < Player.static.MAX_JUMPS then
+	and self.jumps < Player.static.MAX_JUMPS
+	and self.state ~= Player.static.STATE_DEAD then
 		self.onGround = false
 		self.yspeed = math.min(self.yspeed, -Player.static.JUMP_SPEED)
 		self.jumps = self.jumps+1
@@ -173,6 +181,23 @@ function Player:update(dt)
 			end
 		end
 	end
+
+	if self.state == Player.static.STATE_DEAD
+	and self.onGround then
+		self.animator:setProperty("state", 6)
+	elseif self.state == Player.static.STATE_HURT then
+		self.animator:setProperty("state", 4)
+	elseif self.onGround == false then
+		if self.yspeed > 0 then
+			self.animator:setProperty("state", 5)
+		end
+	else
+		if math.abs(self.xspeed) < 2 then
+			self.animator:setProperty("state", 1)
+		else
+			self.animator:setProperty("state", 2)
+		end
+	end
 	
 	-- Update HUD
 	self.hud:setLives(self.id, self.lives, self.max_lives)
@@ -184,6 +209,7 @@ end
 function Player:plant()
 	if self.onGround == false then return end
 	if self.seeds[self.selected_seed] == 0 then return end
+	addScore(25)
 
 	local slots = self.scene:findAll("slot")
 	for i,v in ipairs(slots) do
@@ -219,20 +245,6 @@ function Player:draw()
 		love.graphics.setColor(255, 255, 255, 255)
 	end
 
-	if self.state == Player.static.STATE_HURT then
-		self.animator:setProperty("state", 4)
-	elseif self.onGround == false then
-		if self.yspeed > 0 then
-			self.animator:setProperty("state", 5)
-		end
-	else
-		if math.abs(self.xspeed) < 2 then
-			self.animator:setProperty("state", 1)
-		else
-			self.animator:setProperty("state", 2)
-		end
-	end
-
 	if self.blink < 0 or love.timer.getTime() % 0.04 < 0.02 then
 		self.animator:draw(self.x, self.y, 0, self.dir, 1)
 	end
@@ -246,6 +258,8 @@ function Player:draw()
 end
 
 function Player:onCollide(o)
+	if self.state == Player.static.STATE_DEAD then return end
+
 	if o:getName() == "fruit" then
 		if o:getType() == Fruit.static.TYPE_HEAL then
 			self.lives = math.cap(self.lives+2, 0, math.floor(self.max_lives))
@@ -267,6 +281,7 @@ function Player:onCollide(o)
 	elseif o:getName() == "seed" then
 		self.seeds[o:getType()] = self.seeds[o:getType()] + 1
 		o:kill()
+		addScore(200)
 	elseif self.blink <= 0 and self.shield <= 0 then
 		if o:isInstanceOf(Enemy) and o:isStunned() == false
 		and o:isStunned() == false then
@@ -282,6 +297,11 @@ function Player:onCollide(o)
 			elseif name == "boar" then
 				self.lives = self.lives - 2
 			end
+			if self.lives <= 0 then
+				self.state = Player.static.STATE_DEAD
+				self.blink = 0
+				self.scene:find("controller"):gameOver()
+			end
 
 			self.xspeed = 120*math.sign(self.x - o.x)
 			self.yspeed = 150*math.sign(self.y - o.y)
@@ -290,6 +310,7 @@ function Player:onCollide(o)
 end
 
 function Player:levelUp()
+	self.level = self.level + 1
 	self.xp = 0
 	self.max_xp = self.max_xp + 1
 	self.max_lives = self.max_lives + 1
@@ -301,6 +322,7 @@ end
 function Player:useMagic()
 	if self.magic < self.max_magic then return end
 	self.magic = 0
+	self.scene:add(ScreenShaker(1.5, 1.5))
 
 	for i,v in ipairs(self.scene:getEntities()) do
 		if v:isInstanceOf(Enemy) then
@@ -315,7 +337,7 @@ function Player:getDamage()
 		dmg = dmg * 1.5
 	end
 	if self.berserk > 0 then
-		dmg = dmg * 2
+		dmg = dmg * 1.5
 	end
 	return dmg
 end

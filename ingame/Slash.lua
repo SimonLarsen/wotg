@@ -3,23 +3,23 @@ local Slash = class("Slash", Entity)
 Slash.static.TIME = 0.2
 Slash.static.COLLISION_TIME = 0.1
 
-function Slash:initialize(x, y, xspeed, yspeed, dir, damage, charged)
+function Slash:initialize(player, dir, damage, charged)
 	Entity.initialize(self, x, y, -1, "slash")
 
-	self.xspeed = xspeed
-	self.yspeed = yspeed
+	self.player = player
 	self.dir = dir
 	self.damage = damage
 	self.charged = charged
 
 	self.time = Slash.static.TIME
-	self.collider = BoxCollider(20, 18)
+	self.collider = BoxCollider(24, 18)
 end
 
 function Slash:update(dt)
 	self.time = self.time - dt
-	self.x = self.x + self.xspeed*dt
-	self.y = self.y + self.yspeed*dt
+	self.x = self.player.x + 16*self.dir
+	self.y = self.player.y
+
 	if self.time < Slash.static.TIME-Slash.static.COLLISION_TIME then
 		self.collider = nil
 	end

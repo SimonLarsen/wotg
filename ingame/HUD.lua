@@ -3,7 +3,7 @@ local HUD = class("HUD", Entity)
 local POWER_BAR_WIDTH = 60
 
 function HUD:initialize(players)
-	Entity.initialize(self, 0, 0, -100, "hud")
+	Entity.initialize(self, 0, 0, -50, "hud")
 
 	self.heart = Resources.getImage("heart.png")
 	self.heart_half = Resources.getImage("heart_half.png")

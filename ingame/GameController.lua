@@ -6,14 +6,17 @@ local Background = require("ingame.Background")
 local Slot = require("ingame.Slot")
 local HUD = require("ingame.HUD")
 local Enemy = require("ingame.Enemy")
+local GameOver = require("ingame.GameOver")
+
+local Fade = require("transition.Fade")
 
 local Bird = require("ingame.Bird")
 local Rat = require("ingame.Rat")
 local Pig = require("ingame.Pig")
 local Boar = require("ingame.Boar")
+local Bats = require("ingame.Bats")
 
 local WAVES = {
-	{ "boar" },
 	{ "pig" },
 	{ "bird" },
 	{ "rat", "bird" },
@@ -30,12 +33,11 @@ local WAVES = {
 	{ "pig", "pig", "pig" },
 }
 
-GameController.static.WAVE_DELAY = 10 -- per enemy
-GameController.static.MAX_WAVE_DELAY = 30
+GameController.static.WAVE_DELAY = 10
 GameController.static.SPAWN_DELAY = 1
 
 function GameController:initialize()
-	Entity.initialize(self)
+	Entity.initialize(self, 0, 0, 0, "controller")
 
 	self.next_wave = 10
 	self.next_spawn = 0
@@ -44,13 +46,15 @@ function GameController:initialize()
 end
 
 function GameController:enter()
+	Score.score = 0
+
 	self.scene:add(Background())
 	local terrain = self.scene:add(Terrain())
 	terrain:addBox(2*Screen.WIDTH, 16, Screen.WIDTH/2, Screen.HEIGHT-8)
 	terrain:addBox(64, 16, Screen.WIDTH/2, 88)
 
 	self.scene:add(HUD(1))
-	self.player = self.scene:add(Player(180, 50, 1))
+	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 1))
 	self.camera = self.scene:getCamera()
 
 	-- Left slots
@@ -62,6 +66,10 @@ function GameController:enter()
 	-- Right slots
 	self.scene:add(Slot(182, Screen.HEIGHT-8))
 	self.scene:add(Slot(206, Screen.HEIGHT-8))
+
+	self.scene:add(Fade(2, Fade.static.IN))
+
+	self.players = self.scene:findAll("player")
 end
 
 function GameController:update(dt)
@@ -77,18 +85,23 @@ function GameController:update(dt)
 
 	if self.next_wave <= 0 and self:waveClear() then
 		self.wave = self.wave + 1
-		self.next_wave = math.min(
-			#WAVES[self.wave] * GameController.static.WAVE_DELAY,
-			GameController.static.MAX_WAVE_DELAY
-		)
+		self.next_wave = GameController.static.WAVE_DELAY
 		self.spawned = 0
 	end
 
+	local cx = Screen.WIDTH/2
 	local cy = Screen.HEIGHT/2
-	if self.player.y < 64 then
-		cy = math.cap(Screen.HEIGHT/2 - 1.0*(64-self.player.y), 0, Screen.HEIGHT/2)
+
+	local py = 0
+	for i,v in ipairs(self.players) do
+		py = py + v.y
 	end
-	self.camera:setY(cy)
+	py = py / #self.players
+
+	if py < 64 then
+		cy = math.cap(Screen.HEIGHT/2 - 1.0*(64-py), 0, Screen.HEIGHT/2)
+	end
+	self.camera:setPosition(cx, cy)
 end
 
 function GameController:spawn(type)
@@ -104,6 +117,13 @@ function GameController:spawn(type)
 			self.scene:add(Bird(-16, y, 1))
 		else
 			self.scene:add(Bird(Screen.WIDTH+16, y, -1))
+		end
+	elseif type == "bats" then
+		local y = math.random(16, 100)
+		if love.math.random(1,2) == 1 then
+			self.scene:add(Bats(-16, y, 1))
+		else
+			self.scene:add(Bats(Screen.WIDTH+16, y, -1))
 		end
 	elseif type == "pig" then
 		if love.math.random(1,2) == 1 then
@@ -131,6 +151,17 @@ function GameController:waveClear()
 		end
 	end
 	return true
+end
+
+function GameController:gameOver()
+	self.scene:add(GameOver())
+	timer.after(4, function()
+		self.scene:add(Fade(1, Fade.static.OUT))
+	end)
+	Score.level = self.scene:find("player").level
+	timer.after(5, function()
+		gamestate.switch(require("gameover.GameoverScene")())
+	end)
 end
 
 return GameController

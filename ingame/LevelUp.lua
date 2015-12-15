@@ -10,7 +10,7 @@ end
 
 function LevelUp:update(dt)
 	self.time = self.time + dt
-	if self.time >= 2 then
+	if self.time >= LevelUp.static.TIME then
 		self:kill()
 	end
 end

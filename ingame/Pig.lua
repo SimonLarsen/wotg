@@ -144,7 +144,7 @@ function Pig:draw()
 end
 
 function Pig:damage(dmg)
-	self.blink = 0.15
+	self.blink = Enemy.static.BLINK_TIME
 	self.hp = self.hp - dmg
 	if self.state == Pig.static.STATE_EAT then
 		self.state = Pig.static.STATE_WALK
@@ -178,6 +178,10 @@ function Pig:onCollide(o)
 	elseif o:getName() == "minion" and not self:isStunned() then
 		self:damage(o:getDamage())
 	end
+end
+
+function Pig:getScore()
+	return 200
 end
 
 return Pig

@@ -5,6 +5,7 @@ gamestate = require("hump.gamestate")
 timer = require("hump.timer")
 tween = require("tween.tween")
 
+Serial = require("Serial")
 Animation = require("animation.Animation")
 Animator = require("animation.Animator")
 Screen = require("Screen")
@@ -13,6 +14,7 @@ Scene = require("Scene")
 Entity = require("Entity")
 Resources = require("Resources")
 BoxCollider = require("BoxCollider")
+Score = require("Score")
 
 function love.load()
 	love.graphics.setDefaultFilter("nearest","nearest")
@@ -23,7 +25,8 @@ function love.load()
 	love.window.setMode(Screen.WIDTH*Screen.SCALE, Screen.HEIGHT*Screen.SCALE)
 
 	gamestate.registerEvents()
-	gamestate.push(require("ingame.IngameScene")())
+	--gamestate.switch(require("title.TitleScene")())
+	gamestate.switch(require("ingame.IngameScene")())
 end
 
 function love.gui()
