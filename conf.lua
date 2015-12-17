@@ -1,7 +1,7 @@
 function love.conf(t)
     t.identity = "dk.tangramgames.wotg"
     t.version = "0.9.2"
-    t.console = false
+    t.console = true
  
     t.window.title = "Witch of the Grove"
     t.window.icon = nil

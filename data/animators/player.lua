@@ -9,7 +9,8 @@ return {
 		["hurt"] = { image = "player_hurt.png", fw = 18, fh = 32, oy = 20, delay = 0.25 },
 		["jump"] = { image = "player_jump.png", fw = 18, fh = 32, oy = 20, delay = 0.10, loop = false },
 		["fall"] = { image = "player_fall.png", fw = 18, fh = 32, oy = 20, delay = 0.1 },
-		["dead"] = { image = "player_death.png", fw = 29, fh = 32, ox = 14, oy = 20, delay = 0.1, loop = false } 
+		["dead"] = { image = "player_death.png", fw = 29, fh = 32, ox = 14, oy = 20, delay = 0.1, loop = false },
+		["magic"] = { image = "player_magic.png", fw = 28, fh = 32, oy = 20, delay = 0.1 }
 	},
 
 	properties = {

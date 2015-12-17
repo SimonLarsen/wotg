@@ -30,6 +30,7 @@ function HUD:initialize(players)
 	self.max_lives = {}
 
 	self.magic = {}
+	self.magic_show = {}
 	self.max_magic = {}
 
 	self.seeds = {}
@@ -43,6 +44,7 @@ function HUD:initialize(players)
 		self.lives[player] = 3
 		self.max_lives[player] = 3
 
+		self.magic_show[player] = 0
 		self.magic[player] = 0
 		self.max_magic[player] = 100
 
@@ -54,57 +56,77 @@ function HUD:initialize(players)
 	end
 end
 
+function HUD:update(dt)
+	for player=1,self.players do
+		self.magic_show[player] = math.movetowards(self.magic_show[player], self.magic[player], 3*dt)
+	end
+end
+
 function HUD:gui()
-	-- Draw heart slots
-	local full = math.floor(self.max_lives[1] / 2)
-	local halves = self.max_lives[1] % 2
-	love.graphics.rectangle("fill", 17, 10, (full+halves)*13+4, 2)
-	for i=1,full do
-		love.graphics.draw(self.heart_slot, 19+(i-1)*13, 7)
-	end
-	if halves > 0 then
-		love.graphics.draw(self.heart_slot_half, 19+full*13, 7)
-	end
+	for player=1,self.players do
+		love.graphics.push()
+		love.graphics.translate((player-1)*Screen.WIDTH/2, 0)
 
-	-- Draw hearts
-	full = math.floor(self.lives[1] / 2)
-	halves = self.lives[1] % 2
-	for i=1,full do
-		love.graphics.draw(self.heart, 19+(i-1)*13, 7)
-	end
-	if halves > 0 then
-		love.graphics.draw(self.heart_half, 19+full*13, 7)
-	end
+		-- Draw heart slots
+		local full = math.floor(self.max_lives[player] / 2)
+		local halves = self.max_lives[player] % 2
+		love.graphics.rectangle("fill", 17, 10, (full+halves)*13+4, 2)
+		for i=1,full do
+			love.graphics.draw(self.heart_slot, 19+(i-1)*13, 7)
+		end
+		if halves > 0 then
+			love.graphics.draw(self.heart_slot_half, 19+full*13, 7)
+		end
 
-	-- Draw back overlay
-	love.graphics.draw(self.img_hud1, 0, 0)
+		-- Draw hearts
+		full = math.floor(self.lives[player] / 2)
+		halves = self.lives[player] % 2
+		for i=1,full do
+			love.graphics.draw(self.heart, 19+(i-1)*13, 7)
+		end
+		if halves > 0 then
+			love.graphics.draw(self.heart_half, 19+full*13, 7)
+		end
 
-	-- Draw magic bar
-	local magic_len = self.magic[1] / self.max_magic[1] * 64
-	if self.magic[1] > 0 then
-		love.graphics.draw(self.img_magic_bar, self.magic_left, 18, 19)
-		love.graphics.draw(self.img_magic_bar, self.magic_mid, 20, 19, 0, magic_len-4, 1)
-		if self.magic[1] == self.max_magic[1] then
+		-- Draw back overlay
+		love.graphics.draw(self.img_hud1, 0, 0)
+
+		-- Draw magic bar
+		local magic_len = self.magic_show[player] / self.max_magic[player] * 64
+		local intens = 0
+		if magic_len == 64 then
+			intens = math.cos(love.timer.getTime()*8) / 2 + 0.5
+		end
+		love.graphics.setColor(255, 113+intens*60, 241-intens*7)
+		if magic_len > 0 then
+			love.graphics.draw(self.img_magic_bar, self.magic_left, 18, 19)
+		end
+		if magic_len > 4 then
+			love.graphics.draw(self.img_magic_bar, self.magic_mid, 20, 19, 0, magic_len-4, 1)
+		end
+		if magic_len == 64 then
 			love.graphics.draw(self.img_magic_bar, self.magic_right, 80, 19)
 		end
+		love.graphics.setColor(255, 255, 255)
+
+		-- Seed slots
+		local sel = self.selected_seed[player]
+		love.graphics.draw(self.seed_slots_overlay, self.seed_slots_quads[sel], 17+self.seed_slots_offsets[sel], 26)
+
+		-- Seed counts
+		love.graphics.setFont(self.small_font)
+		for i=1, 3 do
+			love.graphics.print(self.seeds[player][i], (i-1)*16+27, 34)
+		end
+
+		-- Draw XP
+		local xp_len = self.xp[player] / self.max_xp[player] * 32
+		love.graphics.setColor(255, 216, 41)
+		love.graphics.rectangle("fill", 9, 41-xp_len, 3, xp_len)
+		love.graphics.setColor(255, 255, 255)
+
+		love.graphics.pop()
 	end
-
-	-- Seed slots
-	local sel = self.selected_seed[1]
-	love.graphics.setColor(255, 255, 255)
-	love.graphics.draw(self.seed_slots_overlay, self.seed_slots_quads[sel], 17+self.seed_slots_offsets[sel], 26)
-
-	-- Seed counts
-	love.graphics.setFont(self.small_font)
-	for i=1, 3 do
-		love.graphics.print(self.seeds[1][i], (i-1)*16+27, 34)
-	end
-
-	-- Draw XP
-	local xp_len = self.xp[1] / self.max_xp[1] * 32
-	love.graphics.setColor(255, 216, 41)
-	love.graphics.rectangle("fill", 9, 41-xp_len, 3, xp_len)
-	love.graphics.setColor(255, 255, 255)
 end
 
 function HUD:setLives(player, lives, max_lives)

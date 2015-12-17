@@ -253,7 +253,6 @@ function Player:draw()
 		local r = 230*(math.cos(t*16)/2 + 0.5)
 		love.graphics.setColor(r, 230, 230)
 		self.shield_anim:draw(self.x, self.y)
-		--love.graphics.draw(self.img_shield, self.x, self.y, 0, 1, 1, 11, 16)
 		love.graphics.setColor(255, 255, 255)
 	end
 
