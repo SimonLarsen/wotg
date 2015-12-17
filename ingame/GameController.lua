@@ -7,6 +7,8 @@ local Slot = require("ingame.Slot")
 local HUD = require("ingame.HUD")
 local Enemy = require("ingame.Enemy")
 local GameOver = require("ingame.GameOver")
+local KeyboardBinding = require("input.KeyboardBinding")
+local JoystickBinding = require("input.JoystickBinding")
 
 local Fade = require("transition.Fade")
 
@@ -42,7 +44,30 @@ function GameController:enter()
 	terrain:addBox(64, 16, Screen.WIDTH/2, 88)
 
 	self.scene:add(HUD(1))
-	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 1))
+
+	-- Player one
+	local p1keys = KeyboardBinding()
+	p1keys:add("right","right")
+	p1keys:add("left","left")
+	p1keys:add("plant", "d")
+	p1keys:add("jump", " ")
+	p1keys:add("attack", "f")
+	p1keys:add("toggler", "s")
+	p1keys:add("magic", "e")
+	p1keys:addAxis("leftx", "left", "right")
+	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 1, p1keys))
+
+	--[[
+	local p2keys = JoystickBinding(1)
+	p2keys:add("jump", "a")
+	p2keys:add("plant", "b")
+	p2keys:add("attack", "x")
+	p2keys:add("magic", "y")
+	p2keys:add("togglel", "leftshoulder")
+	p2keys:add("toggler", "rightshoulder")
+	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 2, p2keys))
+	]]
+
 	self.camera = self.scene:getCamera()
 
 	-- Left slots

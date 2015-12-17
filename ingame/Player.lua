@@ -1,6 +1,5 @@
 local Player = class("Player", Entity)
 
-local Keybinding = require("Keybinding")
 local Slash = require("ingame.Slash")
 local Beam = require("ingame.Beam")
 local Seed = require("ingame.Seed")
@@ -32,7 +31,7 @@ Player.static.STATE_CHARGE = 2
 Player.static.STATE_HURT   = 3
 Player.static.STATE_DEAD   = 4
 
-function Player:initialize(x, y, id)
+function Player:initialize(x, y, id, keys)
 	Entity.initialize(self, x, y, -1, "player")
 	self.id = id or 1
 
@@ -66,17 +65,7 @@ function Player:initialize(x, y, id)
 	self.shield_anim = Animation(Resources.getImage("shield.png"), 24, 32, 0.15)
 	self.img_berserk = Resources.getImage("berserk.png")
 
-	self.keys = Keybinding()
-	if self.id == 1 then
-		self.keys:add("up","up")
-		self.keys:add("right","right")
-		self.keys:add("down","down")
-		self.keys:add("left","left")
-		self.keys:add("plant", "d")
-		self.keys:add("jump", " ")
-		self.keys:add("attack", "f")
-		self.keys:add("toggle", "s")
-	end
+	self.keys = keys
 end
 
 function Player:enter()
@@ -97,27 +86,29 @@ function Player:update(dt)
 	self.shield = self.shield - dt
 	self.berserk = self.berserk - dt
 
+	local axis1 = self.keys:getAxis("leftx")
+
 	if self.state == Player.static.STATE_IDLE then
 		self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION)
 
-		-- Left right movement
-		if Keyboard.isDown(self.keys:get("left")) then
+		-- Left/right movement
+		if axis1 < 0 then
 			self.dir = -1
-			self.xspeed = math.movetowards(self.xspeed, -Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
+			self.xspeed = math.movetowards(self.xspeed, axis1*Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
 		end
-		if Keyboard.isDown(self.keys:get("right")) then
+		if axis1 > 0 then
 			self.dir = 1
-			self.xspeed = math.movetowards(self.xspeed, Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
+			self.xspeed = math.movetowards(self.xspeed, axis1*Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
 		end
 
-		if Keyboard.wasPressed(self.keys:get("attack"))
+		if self.keys:wasPressed("attack")
 		and self.attack_cooldown <= 0 then
 			self.animator:setProperty("charge", true)
 			self.state = Player.static.STATE_CHARGE
 			self.charge = 0
 		end
 
-		if Keyboard.wasPressed(self.keys:get("plant")) then
+		if self.keys:wasPressed("plant") then
 			self:plant()
 		end
 	
@@ -134,17 +125,10 @@ function Player:update(dt)
 			Resources.playSound("charged.wav")
 		end
 
-		if Keyboard.isDown(self.keys:get("left")) then self.dir = -1 end
-		if Keyboard.isDown(self.keys:get("right")) then self.dir = 1 end
+		if axis1 < 0 then self.dir = -1 end
+		if axis1 > 0 then self.dir = 1 end
 
-		if charged and Keyboard.wasPressed(self.keys:get("up")) then
-			self:useMagic()
-			self.state = Player.static.STATE_IDLE
-			self.charge = 0
-			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
-			self.animator:setProperty("attack", true)
-		end
-		if not Keyboard.isDown(self.keys:get("attack")) then
+		if not self.keys:isDown("attack") then
 			local x = self.x + 16*self.dir
 			self.scene:add(Slash(self, self.dir, self:getDamage(), charged))
 			if charged then
@@ -171,7 +155,15 @@ function Player:update(dt)
 		self.xspeed = math.movetowards(self.xspeed, 0, dt*200)
 	end
 
-	if Keyboard.wasPressed(self.keys:get("jump"))
+	if self.keys:wasPressed("magic") then
+		self:useMagic()
+		self.state = Player.static.STATE_IDLE
+		self.charge = 0
+		self.attack_cooldown = Player.static.ATTACK_COOLDOWN
+		self.animator:setProperty("attack", true)
+	end
+
+	if self.keys:wasPressed("jump")
 	and self.jumps < Player.static.MAX_JUMPS
 	and self.state ~= Player.static.STATE_DEAD then
 		Resources.playSound("jump.wav")
@@ -181,7 +173,15 @@ function Player:update(dt)
 		self.animator:setProperty("jump", true)
 	end
 
-	if Keyboard.wasPressed(self.keys:get("toggle")) then
+	if self.keys:wasPressed("togglel") then
+		self.selected_seed = self.selected_seed - 1
+		if self.selected_seed == 0 then
+			self.selected_seed = 3
+		end
+		self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
+		Resources.playSound("seedselect.wav")
+	end
+	if self.keys:wasPressed("toggler") then
 		self.selected_seed = self.selected_seed % 3 + 1
 		self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
 		Resources.playSound("seedselect.wav")

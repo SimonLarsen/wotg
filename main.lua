@@ -10,6 +10,7 @@ Animation = require("animation.Animation")
 Animator = require("animation.Animator")
 Screen = require("Screen")
 Keyboard = require("input.Keyboard")
+Joystick = require("input.Joystick")
 Scene = require("Scene")
 Entity = require("Entity")
 Resources = require("Resources")
@@ -21,6 +22,8 @@ function love.load()
 	love.graphics.setLineStyle("rough")
 
 	Resources.initialize()
+	Keyboard.initialize()
+	Joystick.initialize()
 
 	local w, h = love.window.getDesktopDimensions()
 	Screen.SCALE = math.floor(h / Screen.HEIGHT)
@@ -40,6 +43,14 @@ end
 
 function love.keyreleased(k)
 	Keyboard.keyreleased(k)
+end
+
+function love.gamepadpressed(joystick, button)
+	Joystick.keypressed(joystick:getID(), button)
+end
+
+function love.gamepadreleased(joystick, button)
+	Joystick.keyreleased(joystick:getID(), button)
 end
 
 function love.run()
@@ -117,6 +128,7 @@ function love.run()
 			love.update(dt)
 
 			Keyboard.clear()
+			Joystick.clear()
 		end
 
 		if love.window.isCreated() then
