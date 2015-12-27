@@ -1,5 +1,4 @@
 local Enemy = require("ingame.Enemy")
-local Seed = require("ingame.Seed")
 local Attack = require("ingame.Attack")
 
 local Rat = class("Rat", Enemy)
@@ -16,7 +15,6 @@ Rat.static.CHARGE_TIME = 0.5
 Rat.static.STUNNED_TIME = 4
 
 Rat.static.MAX_HP = 25
-Rat.static.SEED = Seed.static.TYPE_MAGIC
 
 function Rat:initialize(x, y, dir)
 	Enemy.initialize(self, x, y, 0, "rat")
@@ -165,48 +163,27 @@ function Rat:draw()
 	self.animator:draw(self.x, self.y, 0, -self.dir, 1)
 	if (self.blink > 0)
 	or (self:isStunned() and love.timer.getTime() % 0.2 < 0.1) then
-		love.graphics.setBlendMode("additive")
+		love.graphics.setBlendMode("add")
 		self.animator:draw(self.x, self.y, 0, -self.dir, 1)
 		love.graphics.setBlendMode("alpha")
 	end
 end
 
 function Rat:damage(dmg)
-	self.blink = Enemy.static.BLINK_TIME
-	self.hp = self.hp - dmg
+	Enemy.damage(self, dmg)
 	if self.state == Rat.static.STATE_EAT then
 		self.state = Rat.static.STATE_WALK
 	end
-	if self.hp <= 0 then
-		self:setStunned()
-	end
-	Resources.playSound("hurt2.wav")
+end
+
+function Rat:knockback(dir)
+	self.xspeed = 100*dir
 end
 
 function Rat:setStunned()
 	Enemy.setStunned(self)
 	self.state = Rat.static.STATE_STUNNED
 	self.time = Rat.static.STUNNED_TIME
-end
-
-function Rat:onCollide(o)
-	if self.blink > 0 then return end
-	if o:isInstanceOf(Attack) then
-		if self:isStunned() then
-			if o:isCharged() then
-				self.scene:add(Seed(self.x, self.y-2,
-					o.dir*60,
-					love.math.random(-80, -50)
-				))
-				self:kill()
-			end
-		else
-			self:damage(o:getDamage())
-			self.xspeed = 100*o.dir
-		end
-	elseif o:getName() == "minion" and not self:isStunned() then
-		self:damage(o:getDamage())
-	end
 end
 
 function Rat:getScore()

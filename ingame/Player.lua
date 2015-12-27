@@ -7,6 +7,7 @@ local Fruit = require("ingame.Fruit")
 local Enemy = require("ingame.Enemy")
 local LevelUp = require("ingame.LevelUp")
 local ScreenShaker = require("ingame.ScreenShaker")
+local MagicShader = require("ingame.MagicShader")
 local Fade = require("transition.Fade")
 
 Player.static.MOVE_SPEED = 100
@@ -14,7 +15,7 @@ Player.static.ACCELERATION = 1600
 Player.static.FRICTION = 700
 Player.static.JUMP_SPEED = 270
 Player.static.MAX_JUMPS = 2
-Player.static.ATTACK_COOLDOWN = 0.15
+Player.static.ATTACK_COOLDOWN = 0.2
 Player.static.GRAVITY = 800
 
 Player.static.MAX_MAGIC = 3
@@ -42,7 +43,6 @@ function Player:initialize(x, y, id, keys)
 	self.collider = BoxCollider(16, 22)
 	self.jumps = 0
 	self.attack_cooldown = 0
-	self.charge = 0
 	self.blink = 0
 	self.state = Player.static.STATE_IDLE
 
@@ -52,8 +52,6 @@ function Player:initialize(x, y, id, keys)
 	self.lives = self.max_lives
 	self.max_magic = Player.static.MAX_MAGIC
 	self.magic = self.max_magic
-	self.xp = 0
-	self.max_xp = 3
 	self.power = 1
 	self.seeds = {3, 3, 3}
 	self.selected_seed = 1
@@ -91,7 +89,6 @@ function Player:update(dt)
 	if self.state == Player.static.STATE_IDLE then
 		self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION)
 
-		-- Left/right movement
 		if axis1 < 0 then
 			self.dir = -1
 			self.xspeed = math.movetowards(self.xspeed, axis1*Player.static.MOVE_SPEED, dt*Player.static.ACCELERATION)
@@ -103,46 +100,15 @@ function Player:update(dt)
 
 		if self.keys:wasPressed("attack")
 		and self.attack_cooldown <= 0 then
-			self.animator:setProperty("charge", true)
-			self.state = Player.static.STATE_CHARGE
-			self.charge = 0
+			local x = self.x + 16*self.dir
+			self.scene:add(Slash(self, self.dir, self:getDamage()))
+			Resources.playSound("slash.wav")
+			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
+			self.animator:setProperty("attack", true)
 		end
 
 		if self.keys:wasPressed("plant") then
 			self:plant()
-		end
-	
-	elseif self.state == Player.static.STATE_CHARGE then
-		if self.onGround then
-			self.xspeed = math.movetowards(self.xspeed, 0, dt*Player.static.FRICTION/2)
-		end
-
-		self.charge = self.charge + dt
-		local charged = self.charge >= Player.static.CHARGE_TIME
-
-		if self.charge >= Player.static.CHARGE_TIME
-		and self.charge-dt < Player.static.CHARGE_TIME then
-			Resources.playSound("charged.wav")
-		end
-
-		if axis1 < 0 then self.dir = -1 end
-		if axis1 > 0 then self.dir = 1 end
-
-		if not self.keys:isDown("attack") then
-			local x = self.x + 16*self.dir
-			self.scene:add(Slash(self, self.dir, self:getDamage(), charged))
-			if charged then
-				Resources.playSound("charged_slash.wav")
-			else
-				Resources.playSound("slash.wav")
-			end
-			if self.berserk > 0 then
-				self.scene:add(Beam(x, self.y, self.dir, self:getDamage(), charged))
-			end
-			self.state = Player.static.STATE_IDLE
-			self.charge = 0
-			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
-			self.animator:setProperty("attack", true)
 		end
 	
 	elseif self.state == Player.static.STATE_HURT then
@@ -158,7 +124,6 @@ function Player:update(dt)
 	if self.keys:wasPressed("magic") then
 		self:useMagic()
 		self.state = Player.static.STATE_IDLE
-		self.charge = 0
 		self.attack_cooldown = Player.static.ATTACK_COOLDOWN
 		self.animator:setProperty("attack", true)
 	end
@@ -225,7 +190,6 @@ function Player:update(dt)
 	self.hud:setLives(self.id, self.lives, self.max_lives)
 	self.hud:setMagic(self.id, self.magic, self.max_magic)
 	self.hud:setSeeds(self.id, self.seeds, self.selected_seed)
-	self.hud:setXP(self.id, self.xp, self.max_xp)
 end
 
 function Player:plant()
@@ -261,7 +225,7 @@ function Player:draw()
 		love.graphics.draw(self.img_berserk, self.x, self.y, 0, 1, 1, 15, 15)
 		local a = 255*(math.cos(t*16)/2 + 0.5)
 		love.graphics.setColor(255, 255, 255, a)
-		love.graphics.setBlendMode("additive")
+		love.graphics.setBlendMode("add")
 		love.graphics.draw(self.img_berserk, self.x, self.y, 0, 1, 1, 15, 15)
 		love.graphics.setBlendMode("alpha")
 		love.graphics.setColor(255, 255, 255, 255)
@@ -269,13 +233,6 @@ function Player:draw()
 
 	if self.blink < 0 or love.timer.getTime() % 0.04 < 0.02 then
 		self.animator:draw(self.x, self.y, 0, self.dir, 1)
-	end
-
-	if self.charge > Player.static.CHARGE_TIME
-	and love.timer.getTime() % 0.2 < 0.1 then
-		love.graphics.setColor(50, 115, 165)
-		self.animator:draw(self.x, self.y, 0, self.dir, 1)
-		love.graphics.setColor(255, 255, 255)
 	end
 end
 
@@ -288,10 +245,6 @@ function Player:onCollide(o)
 		elseif o:getType() == Fruit.static.TYPE_MAGIC then
 			self.magic = math.cap(self.magic+1, 0, self.max_magic)
 		elseif o:getType() == Fruit.static.TYPE_XP then
-			self.xp = math.cap(self.xp+1, 0, self.max_xp)
-			if self.xp == self.max_xp then
-				self:levelUp()
-			end
 		elseif o:getType() == Fruit.static.TYPE_MINION then
 		elseif o:getType() == Fruit.static.TYPE_SHIELD then
 			self.shield = Player.static.SHIELD_TIME
@@ -307,12 +260,10 @@ function Player:onCollide(o)
 		o:kill()
 		addScore(200)
 	elseif self.blink <= 0 and self.shield <= 0 then
-		if o:isInstanceOf(Enemy) and o:isStunned() == false
-		and o:isStunned() == false then
+		if o:isInstanceOf(Enemy) and o:isStunned() == false then
 			self.state = Player.static.STATE_HURT
 			self.time = Player.static.HURT_TIME
 			self.blink = Player.static.BLINK_TIME
-			self.charge = 0
 			self.attack_cooldown = Player.static.ATTACK_COOLDOWN
 
 			local name = o:getName()
@@ -339,8 +290,6 @@ end
 
 function Player:levelUp()
 	self.level = self.level + 1
-	self.xp = 0
-	self.max_xp = self.max_xp + 1
 	self.max_lives = self.max_lives + 1
 	self.lives = self.lives + 1
 	self.power = self.power + Player.static.POWER_INCREMENT
@@ -351,9 +300,7 @@ end
 function Player:useMagic()
 	if self.magic < self.max_magic then return end
 	self.magic = 0
-	self.scene:add(ScreenShaker(1.5, 1.5))
-
-	self.scene:add(Fade(2, Fade.static.IN, {152, 37, 156}, 100))
+	self.scene:add(MagicShader(2))
 	Resources.playSound("super.wav")
 	for i,v in ipairs(self.scene:getEntities()) do
 		if v:isInstanceOf(Enemy) then
@@ -364,9 +311,6 @@ end
 
 function Player:getDamage()
 	local dmg = self.power * Player.static.BASE_DAMAGE
-	if self.charge >= Player.static.CHARGE_TIME then
-		dmg = dmg * 1.5
-	end
 	if self.berserk > 0 then
 		dmg = dmg * 1.25
 	end

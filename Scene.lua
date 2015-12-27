@@ -106,7 +106,12 @@ function Scene:getCamera()
 end
 
 function Scene:setBackgroundColor(r, g, b, a)
-	self.backgroundColor = {r, g, b, a or 255}
+	self.backgroundColor = {
+		r or 0,
+		g or 0,
+		b or 0,
+		a or 255
+	}
 end
 
 function Scene:getBackgroundColor()

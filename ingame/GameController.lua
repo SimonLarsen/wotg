@@ -17,7 +17,6 @@ local DarkBird = require("ingame.DarkBird")
 local Rat = require("ingame.Rat")
 local Pig = require("ingame.Pig")
 local Boar = require("ingame.Boar")
-local Bats = require("ingame.Bats")
 
 local enemies = { "rat", "bird", "pig", "darkbird", "boar" }
 
@@ -46,15 +45,26 @@ function GameController:enter()
 	self.scene:add(HUD(1))
 
 	-- Player one
+	--[[
 	local p1keys = KeyboardBinding()
 	p1keys:add("right","right")
 	p1keys:add("left","left")
 	p1keys:add("plant", "d")
-	p1keys:add("jump", " ")
+	p1keys:add("jump", "space")
 	p1keys:add("attack", "f")
 	p1keys:add("toggler", "s")
 	p1keys:add("magic", "e")
 	p1keys:addAxis("leftx", "left", "right")
+	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 1, p1keys))
+	]]
+
+	local p1keys = JoystickBinding(1)
+	p1keys:add("jump", "a")
+	p1keys:add("plant", "b")
+	p1keys:add("attack", "x")
+	p1keys:add("magic", "y")
+	p1keys:add("togglel", "leftshoulder")
+	p1keys:add("toggler", "rightshoulder")
 	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 1, p1keys))
 
 	--[[
@@ -159,13 +169,6 @@ function GameController:spawn(type)
 		else
 			self.scene:add(DarkBird(Screen.WIDTH+16, y, -1))
 		end
-	elseif type == "bats" then
-		local y = math.random(16, 100)
-		if love.math.random(1,2) == 1 then
-			self.scene:add(Bats(-16, y, 1))
-		else
-			self.scene:add(Bats(Screen.WIDTH+16, y, -1))
-		end
 	elseif type == "pig" then
 		if love.math.random(1,2) == 1 then
 			self.scene:add(Pig(-16, Screen.HEIGHT-24, 1))
@@ -195,12 +198,14 @@ function GameController:waveClear()
 end
 
 function GameController:gameOver()
-	self.scene:add(GameOver())
-	timer.after(4, function()
+	timer.after(1, function()
+		self.scene:add(GameOver())
+	end)
+	timer.after(5, function()
 		self.scene:add(Fade(1, Fade.static.OUT))
 	end)
 	Score.level = self.scene:find("player").level
-	timer.after(5, function()
+	timer.after(6, function()
 		gamestate.switch(require("gameover.GameoverScene")())
 	end)
 end

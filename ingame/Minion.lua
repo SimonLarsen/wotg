@@ -1,4 +1,5 @@
 local Enemy = require("ingame.Enemy")
+local DustCloud = require("ingame.DustCloud")
 
 local Minion = class("Minion", Entity)
 
@@ -29,6 +30,7 @@ end
 
 function Minion:enter()
 	self.terrain = self.scene:find("terrain")
+	self.scene:add(DustCloud(self.x, self.y))
 end
 
 function Minion:update(dt)
@@ -83,6 +85,7 @@ function Minion:update(dt)
 	end
 
 	if self.hp <= 0 then
+		self.scene:add(DustCloud(self.x, self.y))
 		self:kill()
 	end
 

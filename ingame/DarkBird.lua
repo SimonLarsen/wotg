@@ -28,30 +28,6 @@ function DarkBird:initialize(x, y, dir)
 	self.collider = BoxCollider(12, 12)
 end
 
-function DarkBird:onCollide(o)
-	if self.blink > 0 then return end
-	if o:isInstanceOf(Attack) then
-		if self:isStunned() then
-			if o:isCharged() then
-				self.scene:add(Seed(self.x, self.y,
-					o.dir*30,
-					love.math.random(-80, -50)
-				))
-				self.scene:add(Seed(self.x, self.y,
-					o.dir*60,
-					love.math.random(-80, -50)
-				))
-				self:kill()
-			end
-		else
-			self:damage(o:getDamage())
-			self.xspeed = 140*o.dir
-		end
-	elseif o:getName() == "minion" and not self:isStunned() then
-		self:damage(o:getDamage())
-	end
-end
-
 function DarkBird:getScore()
 	return 400
 end

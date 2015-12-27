@@ -24,7 +24,10 @@ function HUD:initialize(players)
 		love.graphics.newQuad(17, 0, 17, 17, 51, 17),
 		love.graphics.newQuad(33, 0, 18, 17, 51, 17),
 	}
-	self.seed_slots_offsets = { 0, 18, 33 }
+	self.seed_slots_offsets = { 0, 17, 33 }
+
+	self.time = 10
+	self.max_time = 10
 
 	self.lives = {}
 	self.max_lives = {}
@@ -35,9 +38,6 @@ function HUD:initialize(players)
 
 	self.seeds = {}
 	self.selected_seed = {}
-
-	self.xp = {}
-	self.max_xp = {}
 
 	self.players = players
 	for player=1, self.players do
@@ -50,9 +50,6 @@ function HUD:initialize(players)
 
 		self.seeds[player] = {0, 0, 0}
 		self.selected_seed[player] = 1
-
-		self.xp[player] = 0
-		self.max_xp[player] = 3
 	end
 end
 
@@ -119,12 +116,6 @@ function HUD:gui()
 			love.graphics.print(self.seeds[player][i], (i-1)*16+27, 34)
 		end
 
-		-- Draw XP
-		local xp_len = self.xp[player] / self.max_xp[player] * 32
-		love.graphics.setColor(255, 216, 41)
-		love.graphics.rectangle("fill", 9, 41-xp_len, 3, xp_len)
-		love.graphics.setColor(255, 255, 255)
-
 		love.graphics.pop()
 	end
 end
@@ -142,11 +133,6 @@ end
 function HUD:setSeeds(player, seeds, selected_seed)
 	self.seeds[player] = seeds
 	self.selected_seed[player] = selected_seed
-end
-
-function HUD:setXP(player, xp, max_xp)
-	self.xp[player] = xp
-	self.max_xp[player] = max_xp
 end
 
 return HUD

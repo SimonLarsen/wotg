@@ -15,7 +15,7 @@ end
 
 function TitleController:update(dt)
 	if Keyboard.wasPressed("return")
-	or Keyboard.wasPressed(" ")
+	or Keyboard.wasPressed("space")
 	then
 		Resources.playSound("wobble.wav")
 		self.scene:add(Fade(1, Fade.static.OUT))

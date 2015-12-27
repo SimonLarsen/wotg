@@ -1,11 +1,12 @@
 local Resources = {}
 
-Resources.SOUND_INTERVAL = 0.1
+Resources.SOUND_INTERVAL = 0.05
 
 local images = {}
 local animators = {}
 local fonts = {}
 local sounds = {}
+local shaders = {}
 local music
 
 function Resources.initialize()
@@ -36,7 +37,7 @@ end
 
 function Resources.getImageFont(path, glyphs)
 	if fonts[path] == nil then
-		fonts[path] = love.graphics.newImageFont("data/fonts/" .. path, glyphs)
+		fonts[path] = love.graphics.newImageFont("data/fonts/" .. path, glyphs, 2)
 	end
 	return fonts[path]
 end
@@ -54,6 +55,13 @@ function Resources.playMusic(path)
 	music = love.audio.newSource("data/music/" .. path, "stream")
 	music:setLooping(true)
 	love.audio.play(music)
+end
+
+function Resources.getShader(name)
+	if shaders[name] == nil then
+		shaders[name] = require("data.shaders." .. name)
+	end
+	return shaders[name]
 end
 
 return Resources

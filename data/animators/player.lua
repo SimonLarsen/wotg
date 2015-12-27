@@ -29,7 +29,11 @@ return {
 		{ from = "run", to = "charge", property = "charge", value = true },
 		{ from = "jump", to = "charge", property = "charge", value = true },
 		{ from = "fall", to = "charge", property = "charge", value = true },
-		{ from = "charge", to = "attack", property = "attack", value = true },
+
+		{ from = "idle", to = "attack", property = "attack", value = true },
+		{ from = "run", to = "attack", property = "attack", value = true },
+		{ from = "jump", to = "attack", property = "attack", value = true },
+		{ from = "fall", to = "attack", property = "attack", value = true },
 		{ from = "attack", to = "idle", property = "_finished", value = true },
 
 		{ from = "any", to = "hurt", property = "state", value = 4 },
