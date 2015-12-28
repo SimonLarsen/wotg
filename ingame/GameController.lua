@@ -20,13 +20,13 @@ local Boar = require("ingame.Boar")
 
 local enemies = { "rat", "bird", "pig", "darkbird", "boar" }
 
-GameController.static.WAVE_DELAY = 12
 GameController.static.SPAWN_DELAY = 1
 
 function GameController:initialize()
 	Entity.initialize(self, 0, 0, 0, "controller")
 
-	self.next_wave = 10
+	self.wave_time = 10
+	self.next_wave = self.wave_time
 	self.next_spawn = 0
 	self.wave = 0
 	self.spawned = 0
@@ -42,10 +42,9 @@ function GameController:enter()
 	terrain:addBox(2*Screen.WIDTH, 16, Screen.WIDTH/2, Screen.HEIGHT-8)
 	terrain:addBox(64, 16, Screen.WIDTH/2, 88)
 
-	self.scene:add(HUD(1))
+	self.hud = self.scene:add(HUD(1))
 
 	-- Player one
-	--[[
 	local p1keys = KeyboardBinding()
 	p1keys:add("right","right")
 	p1keys:add("left","left")
@@ -56,8 +55,8 @@ function GameController:enter()
 	p1keys:add("magic", "e")
 	p1keys:addAxis("leftx", "left", "right")
 	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 1, p1keys))
-	]]
 
+	--[[
 	local p1keys = JoystickBinding(1)
 	p1keys:add("jump", "a")
 	p1keys:add("plant", "b")
@@ -66,6 +65,7 @@ function GameController:enter()
 	p1keys:add("togglel", "leftshoulder")
 	p1keys:add("toggler", "rightshoulder")
 	self.scene:add(Player(Screen.WIDTH/2, Screen.HEIGHT-48, 1, p1keys))
+	]]
 
 	--[[
 	local p2keys = JoystickBinding(1)
@@ -106,7 +106,7 @@ function GameController:update(dt)
 		self:spawn(self.wave_enemies[self.spawned])
 	end
 
-	if self.next_wave <= 0 and self:waveClear() then
+	if self.next_wave <= 0 then
 		self:advanceWave()
 	end
 
@@ -120,9 +120,11 @@ function GameController:update(dt)
 	py = py / #self.players
 
 	if py < 64 then
-		cy = math.cap(Screen.HEIGHT/2 - 1.0*(64-py), 0, Screen.HEIGHT/2)
+		cy = math.cap(Screen.HEIGHT/2 - 1.0*(64-py), -200, Screen.HEIGHT/2)
 	end
 	self.camera:setPosition(cx, cy)
+
+	self.hud:setTime(self.next_wave, self.wave_time)
 end
 
 function GameController:advanceWave()
@@ -146,6 +148,9 @@ function GameController:advanceWave()
 		local type = love.math.random(1, avail)
 		table.insert(self.wave_enemies, enemies[type])
 	end
+
+	self.wave_time = count*7
+	self.next_wave = self.wave_time
 end
 
 function GameController:spawn(type)

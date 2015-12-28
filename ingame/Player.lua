@@ -5,6 +5,7 @@ local Beam = require("ingame.Beam")
 local Seed = require("ingame.Seed")
 local Fruit = require("ingame.Fruit")
 local Enemy = require("ingame.Enemy")
+local Dust = require("ingame.Dust")
 local LevelUp = require("ingame.LevelUp")
 local ScreenShaker = require("ingame.ScreenShaker")
 local MagicShader = require("ingame.MagicShader")
@@ -14,23 +15,23 @@ Player.static.MOVE_SPEED = 100
 Player.static.ACCELERATION = 1600
 Player.static.FRICTION = 700
 Player.static.JUMP_SPEED = 270
-Player.static.MAX_JUMPS = 2
+Player.static.MAX_JUMPS = 10
 Player.static.ATTACK_COOLDOWN = 0.2
 Player.static.GRAVITY = 800
 
 Player.static.MAX_MAGIC = 3
 Player.static.BASE_DAMAGE = 20
-Player.static.CHARGE_TIME = 0.4
 Player.static.HURT_TIME = 0.25
+Player.static.PLANT_TIME = 0.3
 Player.static.BLINK_TIME = 2
 Player.static.POWER_INCREMENT = 0.2
 Player.static.SHIELD_TIME = 15
 Player.static.BERSERK_TIME = 15
 
-Player.static.STATE_IDLE   = 1
-Player.static.STATE_CHARGE = 2
-Player.static.STATE_HURT   = 3
-Player.static.STATE_DEAD   = 4
+Player.static.STATE_IDLE  = 1
+Player.static.STATE_HURT  = 2
+Player.static.STATE_PLANT = 3
+Player.static.STATE_DEAD  = 4
 
 function Player:initialize(x, y, id, keys)
 	Entity.initialize(self, x, y, -1, "player")
@@ -117,6 +118,14 @@ function Player:update(dt)
 		if self.time <= 0 then
 			self.state = Player.static.STATE_IDLE
 		end
+
+	elseif self.state == Player.static.STATE_PLANT then
+		self.xspeed = math.movetowards(self.xspeed, 0, dt*500)
+		self.time = self.time - dt
+		if self.time <= 0 then
+			self.state = Player.static.STATE_IDLE
+		end
+
 	elseif self.state == Player.static.STATE_DEAD then
 		self.xspeed = math.movetowards(self.xspeed, 0, dt*200)
 	end
@@ -135,6 +144,7 @@ function Player:update(dt)
 		self.onGround = false
 		self.yspeed = math.min(self.yspeed, -Player.static.JUMP_SPEED)
 		self.jumps = self.jumps+1
+		self.animator:setProperty("state", 1)
 		self.animator:setProperty("jump", true)
 	end
 
@@ -164,6 +174,9 @@ function Player:update(dt)
 				self.y = o.y-o.collider.h/2-self.collider.h/2-0.000001
 				self.onGround = true
 				self.jumps = 0
+				if self.yspeed > 50 then
+					self.scene:add(Dust(self.x, o.y-o.collider.h/2))
+				end
 				self.yspeed = 0
 			end
 		end
@@ -173,10 +186,12 @@ function Player:update(dt)
 	and self.onGround then
 		self.animator:setProperty("state", 6)
 	elseif self.state == Player.static.STATE_HURT then
-		self.animator:setProperty("state", 4)
+		self.animator:setProperty("state", 3)
+	elseif self.state == Player.static.STATE_PLANT then
+		self.animator:setProperty("state", 5)
 	elseif self.onGround == false then
 		if self.yspeed > 0 then
-			self.animator:setProperty("state", 5)
+			self.animator:setProperty("state", 4)
 		end
 	else
 		if math.abs(self.xspeed) < 2 then
@@ -204,6 +219,8 @@ function Player:plant()
 			if v:addSeed(self.selected_seed) then
 				self.seeds[self.selected_seed] = self.seeds[self.selected_seed] - 1
 				addScore(25)
+				self.state = Player.static.STATE_PLANT
+				self.time = Player.static.PLANT_TIME
 				Resources.playSound("plant.wav")
 			end
 		end
@@ -272,6 +289,7 @@ function Player:onCollide(o)
 			elseif name == "boar" or name == "darkbird" then
 				self.lives = self.lives - 2
 			end
+			self.lives = math.max(self.lives, 0)
 
 			if self.lives <= 0 then
 				self.state = Player.static.STATE_DEAD

@@ -17,6 +17,7 @@ function Animator:initialize(animator)
 		self._properties[i] = {
 			value = v.value,
 			isTrigger = v.isTrigger or false,
+			force = v.force or false,
 			predicate = v.predicate
 		}
 	end

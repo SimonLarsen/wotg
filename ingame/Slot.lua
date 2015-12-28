@@ -9,7 +9,7 @@ local Attack = require("ingame.Attack")
 Slot.static.SINGLE_GROW_TIME = 6
 Slot.static.DOUBLE_GROW_TIME = 6
 
-Slot.static.MAX_HP = 4
+Slot.static.MAX_HP = 3
 
 function Slot:initialize(x, y)
 	Entity.initialize(self, x, y, 1, "slot")

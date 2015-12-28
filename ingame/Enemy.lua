@@ -2,7 +2,8 @@ local Enemy = class("Enemy", Entity)
 
 local Seed = require("ingame.Seed")
 local Attack = require("ingame.Attack")
-local DustCloud = require("ingame.DustCloud")
+local Poof = require("ingame.Poof")
+local HitEffect = require("ingame.HitEffect")
 
 Enemy.static.BLINK_TIME = 0.35
 
@@ -32,7 +33,6 @@ function Enemy:damage(dmg)
 	if self.hp <= 0 then
 		self:setStunned()
 	end
-	Resources.playSound("hurt2.wav")
 end
 
 function Enemy:spawnSeed(dir)
@@ -48,10 +48,12 @@ function Enemy:onCollide(o)
 				self:spawnSeed(o.dir)
 			end
 			self:kill()
-			self.scene:add(DustCloud(self.x, self.y))
+			self.scene:add(Poof(self.x, self.y))
 		else
 			self:damage(o:getDamage())
 			self:knockback(o.dir)
+			self.scene:add(HitEffect(o.x, o.y, o.dir))
+			Resources.playSound("hurt2.wav")
 		end
 	end
 end
