@@ -96,7 +96,9 @@ function GameController:enter()
 end
 
 function GameController:update(dt)
-	self.next_wave = self.next_wave - dt
+	local timer_speed = 1
+	if self:waveClear() then timer_speed = 2 end
+	self.next_wave = self.next_wave - dt*timer_speed
 	self.next_spawn = self.next_spawn - dt
 
 	if self.wave > 0 and self.next_spawn <= 0
