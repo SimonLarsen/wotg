@@ -13,7 +13,6 @@ Pig.static.WALK_SPEED = 25
 Pig.static.CHARGE_TIME = 0.5
 Pig.static.DASH_SPEED = 80
 Pig.static.DASH_TIME = 2
-Pig.static.STUNNED_TIME = 4
 
 Pig.static.MAX_HP = 45
 
@@ -156,7 +155,7 @@ end
 function Pig:setStunned()
 	Enemy.setStunned(self)
 	self.state = Pig.static.STATE_STUNNED
-	self.time = Pig.static.STUNNED_TIME
+	self.time = Enemy.static.STUNNED_TIME
 end
 
 function Pig:getScore()

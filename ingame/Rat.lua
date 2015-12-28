@@ -12,7 +12,6 @@ Rat.static.STATE_STUNNED = 5
 Rat.static.GRAVITY = 400
 Rat.static.WALK_SPEED = 35
 Rat.static.CHARGE_TIME = 0.5
-Rat.static.STUNNED_TIME = 4
 
 Rat.static.MAX_HP = 25
 
@@ -183,7 +182,7 @@ end
 function Rat:setStunned()
 	Enemy.setStunned(self)
 	self.state = Rat.static.STATE_STUNNED
-	self.time = Rat.static.STUNNED_TIME
+	self.time = Enemy.static.STUNNED_TIME
 end
 
 function Rat:getScore()

@@ -6,6 +6,7 @@ local Poof = require("ingame.Poof")
 local HitEffect = require("ingame.HitEffect")
 
 Enemy.static.BLINK_TIME = 0.35
+Enemy.static.STUNNED_TIME = 3
 
 function Enemy:initialize(x, y, z, name, seeds)
 	Entity.initialize(self, x, y, z, name)

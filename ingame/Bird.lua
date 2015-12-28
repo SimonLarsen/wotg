@@ -17,7 +17,6 @@ Bird.static.SEEK_SPEED = 50
 Bird.static.DASH_SPEED = 110
 Bird.static.DASH_TIME = 1
 Bird.static.DASH_COOLDOWN = 3
-Bird.static.STUNNED_TIME = 4
 Bird.static.ACCELERATION = 500
 
 Bird.static.MAX_HP = 30
@@ -226,7 +225,7 @@ end
 function Bird:setStunned()
 	Enemy.setStunned(self)
 	self.state = Bird.static.STATE_STUNNED
-	self.time = Bird.static.STUNNED_TIME
+	self.time = Enemy.static.STUNNED_TIME
 end
 
 function Bird:getScore()
