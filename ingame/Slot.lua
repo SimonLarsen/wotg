@@ -8,6 +8,7 @@ local Attack = require("ingame.Attack")
 
 Slot.static.SINGLE_GROW_TIME = 6
 Slot.static.DOUBLE_GROW_TIME = 6
+Slot.static.STUNTED_TIME = 0.1
 
 Slot.static.MAX_HP = 3
 
@@ -18,6 +19,7 @@ function Slot:initialize(x, y)
 	self.progress = 0
 	self.hp = 0
 	self.swing = 0
+	self.stunted = 0
 	self.seed1 = Seed.static.TYPE_NONE
 	self.seed2 = Seed.static.TYPE_NONE
 	self.fruit = Fruit.static.TYPE_NONE
@@ -52,6 +54,7 @@ function Slot:update(dt)
 
 	if not self:isEmpty() then
 		self.seed_size = math.min(self.seed_size + dt*6, 1)
+		self.stunted = self.stunted - dt
 		if self.leaves1_pop > 0 then
 			self.leaves1_pop = self.leaves1_pop - dt
 			if self.leaves1_pop <= 0 then
@@ -65,7 +68,7 @@ function Slot:update(dt)
 				self.leaves2:setProperty("pop", true)
 			end
 		end
-		if self.leaves1_pop <= 0 then
+		if self:isGrowing() and not self:isStunted() then
 			if self:isFull() then
 				self.progress = math.cap(self.progress + dt/Slot.static.DOUBLE_GROW_TIME, 0, 1)
 			else
@@ -121,12 +124,20 @@ function Slot:isEmpty()
 	return self.seed1 == Seed.static.TYPE_NONE
 end
 
+function Slot:isGrowing()
+	return self.leaves1_pop <= 0
+end
+
 function Slot:isFull()
 	return self.seed2 ~= Seed.static.TYPE_NONE
 end
 
 function Slot:isComplete()
 	return self.progress >= 1
+end
+
+function Slot:isStunted()
+	return self.stunted >= 0
 end
 
 function Slot:moveLeaves()
@@ -167,6 +178,7 @@ end
 
 function Slot:eat(dt)
 	self.hp = self.hp - dt
+	self.stunted = Slot.static.STUNTED_TIME
 	if self.hp <= 0 then
 		self:clear()
 	end
